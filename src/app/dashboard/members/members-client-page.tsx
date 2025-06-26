@@ -107,7 +107,7 @@ export function MembersClientPage({ initialUsers, loggedInUser }: { initialUsers
                       <div className="flex items-center gap-4">
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={user.avatar} data-ai-hint="avatar" />
-                          <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
+                          <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-medium">{user.name}</p>

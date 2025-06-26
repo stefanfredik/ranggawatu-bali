@@ -227,7 +227,7 @@ export function IuranBulananClientPage({
                 <TableRow key={member.id}>
                   <TableCell>
                     <div className="flex items-center gap-4">
-                      <Avatar className="h-10 w-10"><AvatarImage src={member.avatar} data-ai-hint="avatar" /><AvatarFallback>{member.name.slice(0, 2)}</AvatarFallback></Avatar>
+                      <Avatar className="h-10 w-10"><AvatarImage src={member.avatar} data-ai-hint="avatar" /><AvatarFallback>{member.name.charAt(0)}</AvatarFallback></Avatar>
                       <div><p className="font-medium">{member.name}</p><p className="text-sm text-muted-foreground">{member.email}</p></div>
                     </div>
                   </TableCell>

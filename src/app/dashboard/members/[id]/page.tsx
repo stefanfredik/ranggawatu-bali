@@ -53,7 +53,7 @@ export default async function MemberDetailsPage({ params }: { params: { id: stri
                 <CardHeader className="items-center text-center border-b p-6">
                     <Avatar className="h-24 w-24 mb-4">
                         <AvatarImage src={member.avatar} data-ai-hint="avatar" />
-                        <AvatarFallback>{member.name.slice(0, 2)}</AvatarFallback>
+                        <AvatarFallback>{member.name.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <CardTitle>{member.name}</CardTitle>
                     <CardDescription>

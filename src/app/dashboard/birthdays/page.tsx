@@ -28,7 +28,7 @@ export default async function BirthdaysPage() {
               <div key={user.id} className="flex flex-col items-center gap-2 rounded-lg border p-4 text-center">
                 <Avatar className="h-20 w-20">
                   <AvatarImage src={user.avatar} data-ai-hint="avatar" />
-                  <AvatarFallback>{user.name.slice(0, 2)}</AvatarFallback>
+                  <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div className="grid gap-0.5">
                   <p className="font-semibold">{user.name}</p>
