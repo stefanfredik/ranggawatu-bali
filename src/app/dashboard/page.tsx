@@ -10,6 +10,10 @@ export default async function DashboardPage() {
   const announcements = await getAnnouncements();
   const events = await getEvents();
 
+  if (!loggedInUser) {
+    return null; // The layout will handle the redirect.
+  }
+
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">

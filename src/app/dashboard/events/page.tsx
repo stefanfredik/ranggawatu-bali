@@ -9,6 +9,10 @@ export default async function EventsPage() {
   const events = await getEvents();
   const loggedInUser = await getLoggedInUser();
 
+  if (!loggedInUser) {
+    return null; // The layout will handle the redirect.
+  }
+
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
