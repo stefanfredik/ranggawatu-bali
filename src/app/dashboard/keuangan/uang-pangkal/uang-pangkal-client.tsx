@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useTransition, type FormEvent } from 'react';
+import { useState, useTransition, type FormEvent, useMemo } from 'react';
 import { format } from 'date-fns';
-import { Calendar as CalendarIcon, MoreHorizontal } from 'lucide-react';
+import { Calendar as CalendarIcon, MoreHorizontal, DollarSign, UserCheck, UserX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { markUangPangkalAsPaid } from '@/lib/actions';
 import type { UserWithUangPangkal } from '@/lib/data.types';
@@ -48,6 +48,18 @@ export function UangPangkalClientPage({ members, uangPangkalAmount }: { members:
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
+  const summary = useMemo(() => {
+    const paidMembers = members.filter(m => m.uangPangkalStatus === 'Lunas');
+    const unpaidMembers = members.filter(m => m.uangPangkalStatus === 'Belum Lunas');
+    const totalCollected = paidMembers.reduce((sum, member) => sum + (member.uangPangkalAmount || 0), 0);
+
+    return {
+      totalCollected,
+      paidCount: paidMembers.length,
+      unpaidCount: unpaidMembers.length,
+    };
+  }, [members]);
+
   const handleMarkPaid = (member: UserWithUangPangkal) => {
     setMemberToMark(member);
     setPaymentDate(new Date());
@@ -90,6 +102,38 @@ export function UangPangkalClientPage({ members, uangPangkalAmount }: { members:
   
   return (
     <>
+       <div className="grid gap-6 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Uang Pangkal</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(summary.totalCollected)}</div>
+            <p className="text-xs text-muted-foreground">Total dana terkumpul dari uang pangkal.</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Anggota Lunas</CardTitle>
+            <UserCheck className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{summary.paidCount}</div>
+            <p className="text-xs text-muted-foreground">Jumlah anggota yang telah membayar.</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Belum Lunas</CardTitle>
+            <UserX className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{summary.unpaidCount}</div>
+            <p className="text-xs text-muted-foreground">Jumlah anggota yang masih memiliki tunggakan.</p>
+          </CardContent>
+        </Card>
+      </div>
       <Card>
         <CardHeader>
           <CardTitle>Status Uang Pangkal Anggota</CardTitle>
