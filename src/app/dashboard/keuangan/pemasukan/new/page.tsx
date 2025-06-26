@@ -6,8 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createPemasukan } from "@/lib/actions";
 import { Textarea } from "@/components/ui/textarea";
+import { getLoggedInUser } from "@/lib/data";
+import { notFound } from "next/navigation";
 
-export default function NewPemasukanPage() {
+export default async function NewPemasukanPage() {
+  const loggedInUser = await getLoggedInUser();
+  if (loggedInUser.role !== 'admin' && loggedInUser.role !== 'bendahara') {
+    notFound();
+  }
 
   return (
     <div className="grid gap-6">

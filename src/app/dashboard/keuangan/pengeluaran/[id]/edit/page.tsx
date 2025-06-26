@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { getPengeluaranById } from '@/lib/data';
+import { getPengeluaranById, getLoggedInUser } from '@/lib/data';
 import { updatePengeluaran } from '@/lib/actions';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,6 +10,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 
 export default async function EditPengeluaranPage({ params }: { params: { id: string } }) {
+  const loggedInUser = await getLoggedInUser();
+  if (loggedInUser.role !== 'admin' && loggedInUser.role !== 'bendahara') {
+    notFound();
+  }
+  
   const id = Number(params.id);
   if (isNaN(id)) {
     notFound();
