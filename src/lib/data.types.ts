@@ -55,11 +55,12 @@ export type User = {
     totalPengeluaran: number;
     saldoAkhir: number;
     totalUangPangkal: number;
+    totalIuranBulanan: number;
     totalPemasukanLain: number;
   };
 
   export type Transaction = {
-    id: number;
+    id: string | number;
     description: string;
     amount: number;
     date: string;

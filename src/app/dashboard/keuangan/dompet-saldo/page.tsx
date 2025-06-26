@@ -56,6 +56,10 @@ export default async function DompetSaldoPage() {
                     <span>Uang Pangkal</span>
                     <span>{formatCurrency(summary.totalUangPangkal)}</span>
                 </div>
+                 <div className="flex justify-between">
+                    <span>Iuran Bulanan</span>
+                    <span>{formatCurrency(summary.totalIuranBulanan)}</span>
+                </div>
                 <div className="flex justify-between">
                     <span>Pemasukan Lain</span>
                     <span>{formatCurrency(summary.totalPemasukanLain)}</span>
@@ -96,7 +100,7 @@ export default async function DompetSaldoPage() {
             </TableHeader>
             <TableBody>
               {recentTransactions.length > 0 ? recentTransactions.map((tx) => (
-                <TableRow key={`${tx.type}-${tx.id}`}>
+                <TableRow key={tx.id}>
                   <TableCell className="font-medium">{tx.description}</TableCell>
                   <TableCell>
                     <Badge variant={tx.type === 'pemasukan' ? 'secondary' : 'destructive'}>

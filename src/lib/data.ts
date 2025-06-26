@@ -142,7 +142,8 @@ export async function getFinancialSummary(): Promise<FinancialSummary> {
         totalPemasukan,
         totalPengeluaran,
         saldoAkhir,
-        totalUangPangkal: totalUangPangkal + totalIuranBulanan, // Combined for simplicity on the card
+        totalUangPangkal,
+        totalIuranBulanan,
         totalPemasukanLain,
     };
 }
@@ -150,18 +151,36 @@ export async function getFinancialSummary(): Promise<FinancialSummary> {
 export async function getRecentTransactions(): Promise<Transaction[]> {
     const oneMonthAgo = subMonths(new Date(), 1);
     const oneMonthAgoDateString = oneMonthAgo.toISOString().split('T')[0];
+    
+    const MONTHS = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
 
     const pemasukanList = db.prepare('SELECT id, description, amount, date FROM pemasukan WHERE date >= ?').all(oneMonthAgoDateString) as Pemasukan[];
     const pengeluaranList = db.prepare('SELECT id, description, amount, date FROM pengeluaran WHERE date >= ?').all(oneMonthAgoDateString) as Pengeluaran[];
-    const uangPangkalList = db.prepare("SELECT id, 'Uang Pangkal' as description, amount, payment_date as date FROM uang_pangkal WHERE payment_date >= ?").all(oneMonthAgoDateString) as any[];
-    const iuranList = db.prepare("SELECT id, 'Iuran Bulanan' as description, amount, payment_date as date FROM iuran_bulanan WHERE payment_date >= ?").all(oneMonthAgoDateString) as any[];
-
+    
+    const uangPangkalQuery = `
+      SELECT up.id, up.amount, up.payment_date as date, u.name as userName
+      FROM uang_pangkal up
+      JOIN users u ON up.user_id = u.id
+      WHERE up.payment_date >= ?
+    `;
+    const uangPangkalList = db.prepare(uangPangkalQuery).all(oneMonthAgoDateString) as { id: number, amount: number, date: string, userName: string }[];
+    
+    const iuranQuery = `
+      SELECT i.id, i.amount, i.payment_date as date, i.month, i.year, u.name as userName
+      FROM iuran_bulanan i
+      JOIN users u ON i.user_id = u.id
+      WHERE i.payment_date >= ?
+    `;
+    const iuranList = db.prepare(iuranQuery).all(oneMonthAgoDateString) as { id: number, amount: number, date: string, month: number, year: number, userName: string }[];
 
     const transactions: Transaction[] = [
-        ...pemasukanList.map(p => ({ ...p, type: 'pemasukan' as const })),
-        ...uangPangkalList.map(p => ({ ...p, type: 'pemasukan' as const, description: `Uang Pangkal` })),
-        ...iuranList.map(p => ({ ...p, type: 'pemasukan' as const, description: `Iuran Bulanan` })),
-        ...pengeluaranList.map(p => ({ ...p, type: 'pengeluaran' as const }))
+        ...pemasukanList.map(p => ({ ...p, id: `pemasukan-${p.id}`, type: 'pemasukan' as const })),
+        ...pengeluaranList.map(p => ({ ...p, id: `pengeluaran-${p.id}`, type: 'pengeluaran' as const })),
+        ...uangPangkalList.map(p => ({ ...p, id: `up-${p.id}`, type: 'pemasukan' as const, description: `Uang Pangkal - ${p.userName}` })),
+        ...iuranList.map(p => ({ ...p, id: `iuran-${p.id}`, type: 'pemasukan' as const, description: `Iuran ${MONTHS[p.month - 1]} ${p.year} - ${p.userName}` }))
     ];
 
     transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
