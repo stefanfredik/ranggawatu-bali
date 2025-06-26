@@ -13,7 +13,8 @@ function initDb() {
       email TEXT NOT NULL UNIQUE,
       role TEXT NOT NULL,
       avatar TEXT,
-      birthDate TEXT
+      birthDate TEXT,
+      password TEXT
     );
   `);
 
@@ -79,12 +80,12 @@ function initDb() {
   `);
 
 
-  const users: User[] = [
-    { id: '1', name: 'Administrator', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15' },
-    { id: '2', name: 'Budi Doremi', email: 'budi@example.com', role: 'bendahara', avatar: 'https://placehold.co/100x100.png', birthDate: '1992-08-22' },
-    { id: '3', name: 'Citra Kirana', email: 'citra@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: new Date(new Date().setMonth(new Date().getMonth(), 5)).toISOString().split('T')[0] },
-    { id: '4', name: 'Dewi Lestari', email: 'dewi@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1988-11-10' },
-    { id: '5', name: 'Eka Kurniawan', email: 'eka@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1995-03-30' },
+  const users: (User & {password: string})[] = [
+    { id: '1', name: 'Administrator', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15', password: '12345' },
+    { id: '2', name: 'Budi Doremi', email: 'budi@example.com', role: 'bendahara', avatar: 'https://placehold.co/100x100.png', birthDate: '1992-08-22', password: '12345' },
+    { id: '3', name: 'Citra Kirana', email: 'citra@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: new Date(new Date().setMonth(new Date().getMonth(), 5)).toISOString().split('T')[0], password: '12345' },
+    { id: '4', name: 'Dewi Lestari', email: 'dewi@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1988-11-10', password: '12345' },
+    { id: '5', name: 'Eka Kurniawan', email: 'eka@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1995-03-30', password: '12345' },
   ];
   
   const events: Event[] = [
@@ -145,7 +146,7 @@ function initDb() {
       { description: 'Perbaikan proyektor', amount: 200000, date: '2024-03-20' },
   ];
 
-  const insertUser = db.prepare('INSERT OR IGNORE INTO users (id, name, email, role, avatar, birthDate) VALUES (?, ?, ?, ?, ?, ?)');
+  const insertUser = db.prepare('INSERT OR IGNORE INTO users (id, name, email, role, avatar, birthDate, password) VALUES (?, ?, ?, ?, ?, ?, ?)');
   const insertEvent = db.prepare('INSERT OR IGNORE INTO events (id, title, date, description, author) VALUES (?, ?, ?, ?, ?)');
   const insertAnnouncement = db.prepare('INSERT OR IGNORE INTO announcements (id, title, content, date, author) VALUES (?, ?, ?, ?, ?)');
   const insertUangPangkal = db.prepare('INSERT OR IGNORE INTO uang_pangkal (user_id, amount, payment_date) VALUES (?, ?, ?)');
@@ -154,7 +155,7 @@ function initDb() {
   const insertIuranBulanan = db.prepare('INSERT OR IGNORE INTO iuran_bulanan (user_id, amount, payment_date, month, year) VALUES (?, ?, ?, ?, ?)');
 
   const insertManyUsers = db.transaction((users) => {
-    for (const user of users) insertUser.run(user.id, user.name, user.email, user.role, user.avatar, user.birthDate);
+    for (const user of users) insertUser.run(user.id, user.name, user.email, user.role, user.avatar, user.birthDate, user.password);
   });
   const insertManyEvents = db.transaction((events) => {
     for (const event of events) insertEvent.run(event.id, event.title, event.date, event.description, event.author);

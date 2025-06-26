@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { db } from './db';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { UANG_PANGKAL_AMOUNT } from './data';
+import { UANG_PANGKAL_AMOUNT, getUserByEmailForAuth } from './data';
 
 const UserSchema = z.object({
   name: z.string().min(1, 'Full Name is required.'),
@@ -32,11 +32,12 @@ export async function createUser(formData: FormData) {
   
   const id = crypto.randomUUID();
   const avatar = 'https://placehold.co/100x100.png';
+  const password = '12345'; // Default password
 
   try {
     db.prepare(
-      'INSERT INTO users (id, name, email, role, avatar, birthDate) VALUES (?, ?, ?, ?, ?, ?)'
-    ).run(id, name, email, role, avatar, birthDate || null);
+      'INSERT INTO users (id, name, email, role, avatar, birthDate, password) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).run(id, name, email, role, avatar, birthDate || null, password);
   } catch (error) {
     console.error('Database Error:', error);
     return {
@@ -376,3 +377,34 @@ export async function markIuranAsPaid(formData: FormData) {
     revalidatePath('/dashboard/keuangan/dompet-saldo');
     return { success: true };
   }
+
+const LoginSchema = z.object({
+  email: z.string().email({ message: "Email is required." }),
+  password: z.string().min(1, { message: "Password is required." }),
+});
+
+export async function authenticate(prevState: string | undefined, formData: FormData) {
+  try {
+    const validatedFields = LoginSchema.safeParse(
+      Object.fromEntries(formData.entries())
+    );
+
+    if (!validatedFields.success) {
+      return 'Invalid fields.';
+    }
+
+    const { email, password } = validatedFields.data;
+    const user = await getUserByEmailForAuth(email);
+
+    if (!user || user.password !== password) {
+      return 'Invalid credentials.';
+    }
+
+  } catch (error) {
+    console.error('Authentication Error:', error);
+    return 'Something went wrong.';
+  }
+
+  revalidatePath('/dashboard');
+  redirect('/dashboard');
+}

@@ -8,7 +8,7 @@ export const UANG_PANGKAL_AMOUNT = 50000;
 export const IURAN_BULANAN_AMOUNT = 20000;
 
 export async function getUsers(): Promise<User[]> {
-    return db.prepare('SELECT * FROM users ORDER BY name ASC').all() as User[];
+    return db.prepare('SELECT id, name, email, role, avatar, birthDate FROM users ORDER BY name ASC').all() as User[];
 }
 
 export async function getUserById(id: string): Promise<UserWithUangPangkal | null> {
@@ -35,6 +35,11 @@ export async function getUserById(id: string): Promise<UserWithUangPangkal | nul
     };
 }
 
+export async function getUserByEmailForAuth(email: string): Promise<User | null> {
+    const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email) as User | undefined;
+    return user || null;
+}
+
 export async function getEvents(): Promise<Event[]> {
     return db.prepare('SELECT * FROM events ORDER BY date DESC').all() as Event[];
 }
@@ -44,7 +49,7 @@ export async function getAnnouncements(): Promise<Announcement[]> {
 }
 
 export async function getLoggedInUser(): Promise<User> {
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get('1') as User | undefined;
+    const user = db.prepare('SELECT id, name, email, role, avatar, birthDate FROM users WHERE id = ?').get('1') as User | undefined;
     if (!user) {
         return { id: '1', name: 'Admin', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15' };
     }

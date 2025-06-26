@@ -5,6 +5,7 @@ export type User = {
     role: 'admin' | 'member' | 'bendahara';
     avatar: string;
     birthDate: string; // YYYY-MM-DD
+    password?: string;
   };
   
   export type Event = {

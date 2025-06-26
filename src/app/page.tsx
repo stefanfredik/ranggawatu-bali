@@ -5,17 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useRouter } from 'next/navigation';
+import { useFormState, useFormStatus } from 'react-dom';
+import { authenticate } from '@/lib/actions';
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 export default function LoginPage() {
-  const router = useRouter();
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you'd have authentication logic here.
-    // For this demo, we'll just redirect to the dashboard.
-    router.push('/dashboard');
-  };
+  const [errorMessage, dispatch] = useFormState(authenticate, undefined);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
@@ -23,17 +19,18 @@ export default function LoginPage() {
         <CardHeader>
           <CardTitle className="text-2xl font-bold">Organizee</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account.
+            Enter your email and password below to login.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="grid gap-4">
+          <form action={dispatch} className="grid gap-4">
             <div className="grid gap-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
-                placeholder="m@example.com"
+                name="email"
+                placeholder="admin@example.com"
                 required
               />
             </div>
@@ -47,11 +44,16 @@ export default function LoginPage() {
                   Forgot your password?
                 </Link>
               </div>
-              <Input id="password" type="password" required />
+              <Input id="password" type="password" name="password" required defaultValue="12345"/>
             </div>
-            <Button type="submit" className="w-full">
-              Login
-            </Button>
+             {errorMessage && (
+              <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Login Failed</AlertTitle>
+                  <AlertDescription>{errorMessage}</AlertDescription>
+              </Alert>
+            )}
+            <LoginButton />
           </form>
           <div className="mt-4 text-center text-sm">
             Don&apos;t have an account?{" "}
@@ -62,5 +64,15 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function LoginButton() {
+  const { pending } = useFormStatus();
+ 
+  return (
+    <Button type="submit" className="w-full" aria-disabled={pending}>
+      {pending ? "Logging in..." : "Login"}
+    </Button>
   );
 }
