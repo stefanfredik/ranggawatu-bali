@@ -250,3 +250,82 @@ export async function updatePemasukan(id: number, formData: FormData) {
           return { message: 'Database Error: Failed to delete pemasukan.' };
       }
   }
+
+const PengeluaranSchema = z.object({
+  description: z.string().min(1, 'Description is required.'),
+  amount: z.coerce.number().positive('Amount must be a positive number.'),
+  date: z.string().min(1, 'Date is required.'),
+});
+
+export async function createPengeluaran(formData: FormData) {
+    const validatedFields = PengeluaranSchema.safeParse({
+        description: formData.get('description'),
+        amount: formData.get('amount'),
+        date: formData.get('date'),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Missing Fields. Failed to Create Pengeluaran.',
+        };
+    }
+
+    const { description, amount, date } = validatedFields.data;
+
+    try {
+        db.prepare(
+            'INSERT INTO pengeluaran (description, amount, date) VALUES (?, ?, ?)'
+        ).run(description, amount, date);
+    } catch (error) {
+        console.error('Database Error:', error);
+        return { message: 'Database Error: Failed to Create Pengeluaran.' };
+    }
+
+    revalidatePath('/dashboard/keuangan/pengeluaran');
+    revalidatePath('/dashboard/keuangan/dompet-saldo');
+    redirect('/dashboard/keuangan/pengeluaran');
+}
+
+export async function updatePengeluaran(id: number, formData: FormData) {
+    const validatedFields = PengeluaranSchema.safeParse({
+        description: formData.get('description'),
+        amount: formData.get('amount'),
+        date: formData.get('date'),
+    });
+
+    if (!validatedFields.success) {
+        return {
+            errors: validatedFields.error.flatten().fieldErrors,
+            message: 'Missing Fields. Failed to Update Pengeluaran.',
+        };
+    }
+
+    const { description, amount, date } = validatedFields.data;
+
+    try {
+        db.prepare(
+            'UPDATE pengeluaran SET description = ?, amount = ?, date = ? WHERE id = ?'
+        ).run(description, amount, date, id);
+    } catch (error) {
+        console.error('Database Error:', error);
+        return { message: 'Database Error: Failed to Update Pengeluaran.' };
+    }
+
+    revalidatePath('/dashboard/keuangan/pengeluaran');
+    revalidatePath(`/dashboard/keuangan/pengeluaran/${id}`);
+    revalidatePath('/dashboard/keuangan/dompet-saldo');
+    redirect(`/dashboard/keuangan/pengeluaran/${id}`);
+}
+
+export async function deletePengeluaran(id: number) {
+    try {
+        db.prepare('DELETE FROM pengeluaran WHERE id = ?').run(id);
+        revalidatePath('/dashboard/keuangan/pengeluaran');
+        revalidatePath('/dashboard/keuangan/dompet-saldo');
+        return { success: true };
+    } catch (error) {
+        console.error('Database Error:', error);
+        return { message: 'Database Error: Failed to delete pengeluaran.' };
+    }
+}

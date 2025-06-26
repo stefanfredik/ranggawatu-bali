@@ -1,5 +1,5 @@
 import { db } from './db';
-import type { User, Event, Announcement, UserWithUangPangkal, FinancialSummary, Pemasukan } from './data.types';
+import type { User, Event, Announcement, UserWithUangPangkal, FinancialSummary, Pemasukan, Pengeluaran } from './data.types';
 
 export * from './data.types';
 
@@ -78,6 +78,15 @@ export async function getPemasukan(): Promise<Pemasukan[]> {
 export async function getPemasukanById(id: number): Promise<Pemasukan | null> {
     const pemasukan = db.prepare('SELECT * FROM pemasukan WHERE id = ?').get(id) as Pemasukan | undefined;
     return pemasukan || null;
+}
+
+export async function getPengeluaran(): Promise<Pengeluaran[]> {
+    return db.prepare('SELECT * FROM pengeluaran ORDER BY date DESC').all() as Pengeluaran[];
+}
+
+export async function getPengeluaranById(id: number): Promise<Pengeluaran | null> {
+    const pengeluaran = db.prepare('SELECT * FROM pengeluaran WHERE id = ?').get(id) as Pengeluaran | undefined;
+    return pengeluaran || null;
 }
 
 export async function getFinancialSummary(): Promise<FinancialSummary> {
