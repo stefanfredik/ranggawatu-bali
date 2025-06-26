@@ -13,10 +13,15 @@ function initDb() {
       email TEXT NOT NULL UNIQUE,
       role TEXT NOT NULL,
       avatar TEXT,
-      birthDate TEXT,
-      password TEXT
+      birthDate TEXT
     );
   `);
+  
+  // Migration for password column
+  const usersTableInfo = db.prepare("PRAGMA table_info(users)").all() as {name: string}[];
+  if (!usersTableInfo.some(col => col.name === 'password')) {
+    db.exec('ALTER TABLE users ADD COLUMN password TEXT');
+  }
 
   db.exec(`
     CREATE TABLE IF NOT EXISTS events (
