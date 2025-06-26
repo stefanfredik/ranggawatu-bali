@@ -27,9 +27,9 @@ export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pe
     );
   }, [pemasukanList, searchTerm]);
 
-  const totalPemasukan = useMemo(() => {
-    return filteredPemasukan.reduce((sum, item) => sum + item.amount, 0);
-  }, [filteredPemasukan]);
+  const totalSemuaPemasukan = useMemo(() => {
+    return pemasukanList.reduce((sum, item) => sum + item.amount, 0);
+  }, [pemasukanList]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -86,14 +86,14 @@ export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pe
         <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                Total Pemasukan (Hasil Filter)
+                Total Semua Pemasukan
                 </CardTitle>
                 <ArrowDownCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-                <div className="text-2xl font-bold">{formatCurrency(totalPemasukan)}</div>
+                <div className="text-2xl font-bold">{formatCurrency(totalSemuaPemasukan)}</div>
                 <p className="text-xs text-muted-foreground">
-                Total dari semua pemasukan yang ditampilkan di bawah.
+                Total dari semua pemasukan yang tercatat.
                 </p>
             </CardContent>
         </Card>
