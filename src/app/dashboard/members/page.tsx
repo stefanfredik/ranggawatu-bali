@@ -1,3 +1,4 @@
+'use client';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { loggedInUser, users } from "@/lib/data";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
+import Link from "next/link";
 
 export default function MembersPage() {
   return (
@@ -18,9 +20,11 @@ export default function MembersPage() {
           </p>
         </div>
         {loggedInUser.role === 'admin' && (
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Member
+          <Button asChild>
+            <Link href="/dashboard/members/new">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Member
+            </Link>
           </Button>
         )}
       </div>
@@ -69,7 +73,11 @@ export default function MembersPage() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                        <DropdownMenuItem>Edit</DropdownMenuItem>
+                        <Link href={`/dashboard/members/${user.id}/edit`}>
+                          <DropdownMenuItem>
+                            Edit
+                          </DropdownMenuItem>
+                        </Link>
                         <DropdownMenuItem>Delete</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
