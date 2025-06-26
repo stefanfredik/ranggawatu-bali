@@ -151,7 +151,6 @@ function initDb() {
       { description: 'Perbaikan proyektor', amount: 200000, date: '2024-03-20' },
   ];
 
-  const insertUser = db.prepare('INSERT OR IGNORE INTO users (id, name, email, role, avatar, birthDate, password) VALUES (?, ?, ?, ?, ?, ?, ?)');
   const insertEvent = db.prepare('INSERT OR IGNORE INTO events (id, title, date, description, author) VALUES (?, ?, ?, ?, ?)');
   const insertAnnouncement = db.prepare('INSERT OR IGNORE INTO announcements (id, title, content, date, author) VALUES (?, ?, ?, ?, ?)');
   const insertUangPangkal = db.prepare('INSERT OR IGNORE INTO uang_pangkal (user_id, amount, payment_date) VALUES (?, ?, ?)');
@@ -159,9 +158,17 @@ function initDb() {
   const insertPengeluaran = db.prepare('INSERT OR IGNORE INTO pengeluaran (description, amount, date) VALUES (?, ?, ?)');
   const insertIuranBulanan = db.prepare('INSERT OR IGNORE INTO iuran_bulanan (user_id, amount, payment_date, month, year) VALUES (?, ?, ?, ?, ?)');
 
-  const insertManyUsers = db.transaction((users) => {
-    for (const user of users) insertUser.run(user.id, user.name, user.email, user.role, user.avatar, user.birthDate, user.password);
+  // This transaction will insert users if they don't exist, and then ensure their password is set.
+  // It's safe to run every time.
+  const seedUsers = db.transaction((usersToSeed) => {
+    const insertStmt = db.prepare('INSERT OR IGNORE INTO users (id, name, email, role, avatar, birthDate) VALUES (?, ?, ?, ?, ?, ?)');
+    const updatePwdStmt = db.prepare('UPDATE users SET password = ? WHERE id = ?');
+    for (const user of usersToSeed) {
+        insertStmt.run(user.id, user.name, user.email, user.role, user.avatar, user.birthDate);
+        updatePwdStmt.run(user.password, user.id);
+    }
   });
+
   const insertManyEvents = db.transaction((events) => {
     for (const event of events) insertEvent.run(event.id, event.title, event.date, event.description, event.author);
   });
@@ -181,11 +188,9 @@ function initDb() {
     for (const item of data) insertIuranBulanan.run(item.user_id, item.amount, item.payment_date, item.month, item.year);
   });
   
-  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
-  if (userCount.count === 0) {
-      insertManyUsers(users);
-  }
-
+  // Seed users and ensure passwords are set
+  seedUsers(users);
+  
   const eventCount = db.prepare('SELECT COUNT(*) as count FROM events').get() as { count: number };
   if (eventCount.count === 0) {
       insertManyEvents(events);
