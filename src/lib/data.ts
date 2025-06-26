@@ -50,10 +50,10 @@ export async function getAnnouncements(): Promise<Announcement[]> {
     return db.prepare('SELECT * FROM announcements ORDER BY date DESC').all() as Announcement[];
 }
 
-export const getLoggedInUser = async (): Promise<User> => {
+export async function getLoggedInUser(): Promise<User | null> {
     const sessionId = cookies().get('session')?.value;
     if (!sessionId) {
-        redirect('/');
+        return null;
     }
 
     const user = db.prepare('SELECT id, name, email, role, avatar, birthDate FROM users WHERE id = ?').get(sessionId) as User | undefined;
@@ -61,7 +61,7 @@ export const getLoggedInUser = async (): Promise<User> => {
     if (!user) {
         // Cookie might be invalid or user deleted
         cookies().delete('session');
-        redirect('/');
+        return null;
     }
     return user;
 };

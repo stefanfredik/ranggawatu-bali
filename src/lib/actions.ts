@@ -16,7 +16,7 @@ const UserSchema = z.object({
 
 export async function createUser(formData: FormData) {
   const loggedInUser = await getLoggedInUser();
-  if (loggedInUser.role !== 'admin') {
+  if (!loggedInUser || loggedInUser.role !== 'admin') {
     throw new Error('Unauthorized');
   }
 
@@ -57,7 +57,7 @@ export async function createUser(formData: FormData) {
 
 export async function updateUser(id: string, formData: FormData) {
     const loggedInUser = await getLoggedInUser();
-    if (loggedInUser.role !== 'admin') {
+    if (!loggedInUser || loggedInUser.role !== 'admin') {
       throw new Error('Unauthorized');
     }
 
@@ -95,6 +95,11 @@ export async function updateUser(id: string, formData: FormData) {
 }
 
 export async function deleteUser(id: string) {
+    const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser || loggedInUser.role !== 'admin') {
+      throw new Error('Unauthorized');
+    }
+
     if (id === '1') {
         console.error("Attempted to delete the default admin user.");
         return { message: 'Cannot delete the administrator account.' };
@@ -132,6 +137,11 @@ const ProfileSchema = z.object({
 });
 
 export async function updateProfile(id: string, prevState: any, formData: FormData) {
+  const loggedInUser = await getLoggedInUser();
+  if (!loggedInUser || loggedInUser.id !== id) {
+    throw new Error('Unauthorized');
+  }
+
   const rawFormData = Object.fromEntries(formData.entries());
 
   if (!rawFormData.password && !rawFormData.confirmPassword) {
@@ -173,6 +183,11 @@ export async function updateProfile(id: string, prevState: any, formData: FormDa
 }
 
 export async function markUangPangkalAsPaid(userId: string, paymentDate: string) {
+  const loggedInUser = await getLoggedInUser();
+  if (!loggedInUser || (loggedInUser.role !== 'admin' && loggedInUser.role !== 'bendahara')) {
+    throw new Error('Unauthorized');
+  }
+
   const UangPangkalSchema = z.object({
     userId: z.string(),
     paymentDate: z.string({ required_error: 'Payment date is required.' }).refine(val => !isNaN(Date.parse(val)), { message: "Invalid date format" }),
@@ -214,6 +229,11 @@ const PemasukanSchema = z.object({
   });
   
 export async function createPemasukan(formData: FormData) {
+    const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser || (loggedInUser.role !== 'admin' && loggedInUser.role !== 'bendahara')) {
+      throw new Error('Unauthorized');
+    }
+  
     const validatedFields = PemasukanSchema.safeParse({
       description: formData.get('description'),
       amount: formData.get('amount'),
@@ -247,6 +267,11 @@ export async function createPemasukan(formData: FormData) {
 }
 
 export async function updatePemasukan(id: number, formData: FormData) {
+    const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser || (loggedInUser.role !== 'admin' && loggedInUser.role !== 'bendahara')) {
+      throw new Error('Unauthorized');
+    }
+
     const validatedFields = PemasukanSchema.safeParse({
       description: formData.get('description'),
       amount: formData.get('amount'),
@@ -281,6 +306,11 @@ export async function updatePemasukan(id: number, formData: FormData) {
   
   
   export async function deletePemasukan(id: number) {
+      const loggedInUser = await getLoggedInUser();
+      if (!loggedInUser || (loggedInUser.role !== 'admin' && loggedInUser.role !== 'bendahara')) {
+        throw new Error('Unauthorized');
+      }
+
       try {
           db.prepare('DELETE FROM pemasukan WHERE id = ?').run(id);
           revalidatePath('/dashboard/keuangan/pemasukan');
@@ -299,6 +329,11 @@ const PengeluaranSchema = z.object({
 });
 
 export async function createPengeluaran(formData: FormData) {
+    const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser || (loggedInUser.role !== 'admin' && loggedInUser.role !== 'bendahara')) {
+      throw new Error('Unauthorized');
+    }
+
     const validatedFields = PengeluaranSchema.safeParse({
         description: formData.get('description'),
         amount: formData.get('amount'),
@@ -329,6 +364,11 @@ export async function createPengeluaran(formData: FormData) {
 }
 
 export async function updatePengeluaran(id: number, formData: FormData) {
+    const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser || (loggedInUser.role !== 'admin' && loggedInUser.role !== 'bendahara')) {
+      throw new Error('Unauthorized');
+    }
+
     const validatedFields = PengeluaranSchema.safeParse({
         description: formData.get('description'),
         amount: formData.get('amount'),
@@ -360,6 +400,11 @@ export async function updatePengeluaran(id: number, formData: FormData) {
 }
 
 export async function deletePengeluaran(id: number) {
+    const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser || (loggedInUser.role !== 'admin' && loggedInUser.role !== 'bendahara')) {
+      throw new Error('Unauthorized');
+    }
+  
     try {
         db.prepare('DELETE FROM pengeluaran WHERE id = ?').run(id);
         revalidatePath('/dashboard/keuangan/pengeluaran');
@@ -372,6 +417,11 @@ export async function deletePengeluaran(id: number) {
 }
 
 export async function markIuranAsPaid(formData: FormData) {
+    const loggedInUser = await getLoggedInUser();
+    if (!loggedInUser || (loggedInUser.role !== 'admin' && loggedInUser.role !== 'bendahara')) {
+      throw new Error('Unauthorized');
+    }
+
     const IuranSchema = z.object({
       userId: z.string(),
       paymentDate: z.string().min(1, 'Payment date is required.'),
@@ -446,7 +496,6 @@ export async function authenticate(prevState: string | undefined, formData: Form
     return 'Something went wrong.';
   }
 
-  revalidatePath('/dashboard');
   redirect('/dashboard');
 }
 
@@ -462,7 +511,7 @@ const AnnouncementSchema = z.object({
 
 export async function createAnnouncement(formData: FormData) {
   const loggedInUser = await getLoggedInUser();
-  if (loggedInUser.role !== 'admin') {
+  if (!loggedInUser || loggedInUser.role !== 'admin') {
     throw new Error('Unauthorized');
   }
 
@@ -505,7 +554,7 @@ const EventSchema = z.object({
 
 export async function createEvent(formData: FormData) {
     const loggedInUser = await getLoggedInUser();
-    if (loggedInUser.role !== 'admin') {
+    if (!loggedInUser || loggedInUser.role !== 'admin') {
         throw new Error('Unauthorized');
     }
 
