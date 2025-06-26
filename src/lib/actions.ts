@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { db } from './db';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { UANG_PANGKAL_AMOUNT, IURAN_BULANAN_AMOUNT } from './data';
+import { UANG_PANGKAL_AMOUNT } from './data';
 
 const UserSchema = z.object({
   name: z.string().min(1, 'Full Name is required.'),
@@ -337,6 +337,7 @@ export async function markIuranAsPaid(formData: FormData) {
       paymentDate: z.string().min(1, 'Payment date is required.'),
       month: z.coerce.number(),
       year: z.coerce.number(),
+      amount: z.coerce.number().positive('Amount must be a positive number.'),
     });
   
     const validatedFields = IuranSchema.safeParse({
@@ -344,6 +345,7 @@ export async function markIuranAsPaid(formData: FormData) {
       paymentDate: formData.get('paymentDate'),
       month: formData.get('month'),
       year: formData.get('year'),
+      amount: formData.get('amount'),
     });
   
     if (!validatedFields.success) {
@@ -354,7 +356,7 @@ export async function markIuranAsPaid(formData: FormData) {
       };
     }
   
-    const { userId, paymentDate, month, year } = validatedFields.data;
+    const { userId, paymentDate, month, year, amount } = validatedFields.data;
   
     try {
       db.prepare(
@@ -362,7 +364,7 @@ export async function markIuranAsPaid(formData: FormData) {
          VALUES (?, ?, ?, ?, ?)
          ON CONFLICT(user_id, month, year) 
          DO UPDATE SET amount = excluded.amount, payment_date = excluded.payment_date`
-      ).run(userId, IURAN_BULANAN_AMOUNT, paymentDate, month, year);
+      ).run(userId, amount, paymentDate, month, year);
     } catch (error) {
       console.error('Database Error:', error);
       return {

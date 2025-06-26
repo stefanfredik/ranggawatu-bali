@@ -13,7 +13,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -28,6 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Popover,
@@ -82,6 +82,7 @@ export function IuranBulananClientPage({
   const pathname = usePathname();
   const [memberToMark, setMemberToMark] = useState<UserWithIuranStatus | null>(null);
   const [paymentDate, setPaymentDate] = useState<Date | undefined>(new Date());
+  const [paymentAmount, setPaymentAmount] = useState(iuranAmount);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
 
@@ -108,6 +109,7 @@ export function IuranBulananClientPage({
   const handleMarkPaid = (member: UserWithIuranStatus) => {
     setMemberToMark(member);
     setPaymentDate(new Date());
+    setPaymentAmount(iuranAmount);
   };
 
   const closeDialog = () => setMemberToMark(null);
@@ -121,6 +123,7 @@ export function IuranBulananClientPage({
     formData.append('paymentDate', format(paymentDate, 'yyyy-MM-dd'));
     formData.append('month', String(initialMonth));
     formData.append('year', String(initialYear));
+    formData.append('amount', String(paymentAmount));
 
     startTransition(async () => {
       const result = await markIuranAsPaid(formData);
@@ -265,6 +268,17 @@ export function IuranBulananClientPage({
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0"><Calendar mode="single" selected={paymentDate} onSelect={setPaymentDate} initialFocus /></PopoverContent>
                 </Popover>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="payment-amount">Jumlah (IDR)</Label>
+                <Input
+                  id="payment-amount"
+                  name="amount"
+                  type="number"
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(Number(e.target.value))}
+                  required
+                />
               </div>
             </div>
             <DialogFooter>
