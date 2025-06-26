@@ -165,3 +165,42 @@ export async function markUangPangkalAsPaid(userId: string, paymentDate: string)
   revalidatePath('/dashboard/keuangan/uang-pangkal');
   return { success: true };
 }
+
+const PemasukanSchema = z.object({
+    description: z.string().min(1, 'Description is required.'),
+    amount: z.coerce.number().positive('Amount must be a positive number.'),
+    date: z.string().min(1, 'Date is required.'),
+  });
+  
+  export async function createPemasukan(formData: FormData) {
+    const validatedFields = PemasukanSchema.safeParse({
+      description: formData.get('description'),
+      amount: formData.get('amount'),
+      date: formData.get('date'),
+    });
+  
+    if (!validatedFields.success) {
+      console.error(validatedFields.error);
+      return {
+        errors: validatedFields.error.flatten().fieldErrors,
+        message: 'Missing Fields. Failed to Create Pemasukan.',
+      };
+    }
+    
+    const { description, amount, date } = validatedFields.data;
+  
+    try {
+      db.prepare(
+        'INSERT INTO pemasukan (description, amount, date) VALUES (?, ?, ?)'
+      ).run(description, amount, date);
+    } catch (error) {
+      console.error('Database Error:', error);
+      return {
+          message: 'Database Error: Failed to Create Pemasukan.',
+      };
+    }
+  
+    revalidatePath('/dashboard/keuangan/pemasukan');
+    revalidatePath('/dashboard/keuangan/dompet-saldo');
+    redirect('/dashboard/keuangan/pemasukan');
+  }

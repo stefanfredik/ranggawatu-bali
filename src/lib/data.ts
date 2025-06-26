@@ -1,5 +1,5 @@
 import { db } from './db';
-import type { User, Event, Announcement, UserWithUangPangkal, FinancialSummary } from './data.types';
+import type { User, Event, Announcement, UserWithUangPangkal, FinancialSummary, Pemasukan } from './data.types';
 
 export * from './data.types';
 
@@ -69,6 +69,10 @@ export async function getUsersWithUangPangkalStatus(): Promise<UserWithUangPangk
             uangPangkalStatus: isPaid ? 'Lunas' : 'Belum Lunas',
         };
     });
+}
+
+export async function getPemasukan(): Promise<Pemasukan[]> {
+    return db.prepare('SELECT * FROM pemasukan ORDER BY date DESC').all() as Pemasukan[];
 }
 
 export async function getFinancialSummary(): Promise<FinancialSummary> {
