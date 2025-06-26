@@ -50,6 +50,9 @@ export function DashboardClient({
       label: "Keuangan", 
       icon: Landmark, 
       subMenus: [
+        { href: "/dashboard/keuangan/dompet-saldo", label: "Dompet Saldo" },
+        { href: "/dashboard/keuangan/pemasukan", label: "Pemasukan" },
+        { href: "/dashboard/keuangan/pengeluaran", label: "Pengeluaran" },
         { href: "/dashboard/keuangan/uang-pangkal", label: "Uang Pangkal" },
         { href: "/dashboard/keuangan/iuran-bulanan", label: "Iuran Bulanan" },
       ]
