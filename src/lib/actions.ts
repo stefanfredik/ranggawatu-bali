@@ -100,38 +100,66 @@ export async function deleteUser(id: string) {
 }
 
 const ProfileSchema = z.object({
-    name: z.string().min(1, 'Full Name is required.'),
-    email: z.string().email('Invalid email address.'),
-    birthDate: z.string().optional(),
-  });
+  name: z.string().min(1, 'Full Name is required.'),
+  email: z.string().email('Invalid email address.'),
+  birthDate: z.string().optional(),
+  password: z.string().optional(),
+  confirmPassword: z.string().optional(),
+})
+.refine(data => {
+  if (data.password && data.password.length < 5) return false;
+  return true;
+}, {
+  message: "Password must be at least 5 characters.",
+  path: ["password"],
+})
+.refine(data => {
+  if (data.password !== data.confirmPassword) return false;
+  return true;
+}, {
+  message: "Passwords do not match.",
+  path: ["confirmPassword"],
+});
+
+export async function updateProfile(id: string, prevState: any, formData: FormData) {
+  const rawFormData = Object.fromEntries(formData.entries());
+
+  if (!rawFormData.password && !rawFormData.confirmPassword) {
+      delete rawFormData.password;
+      delete rawFormData.confirmPassword;
+  }
+
+  const validatedFields = ProfileSchema.safeParse(rawFormData);
+
+  if (!validatedFields.success) {
+      return {
+          errors: validatedFields.error.flatten().fieldErrors,
+          message: 'Invalid data. Please check the form.',
+      };
+  }
+
+  const { name, email, birthDate, password } = validatedFields.data;
+
+  try {
+      db.transaction(() => {
+          db.prepare(
+              'UPDATE users SET name = ?, email = ?, birthDate = ? WHERE id = ?'
+          ).run(name, email, birthDate || null, id);
   
-export async function updateProfile(id: string, formData: FormData) {
-    const validatedFields = ProfileSchema.safeParse({
-        name: formData.get('name'),
-        email: formData.get('email'),
-        birthDate: formData.get('birthdate'),
-    });
-  
-    if (!validatedFields.success) {
-        console.error(validatedFields.error);
-        return { error: 'Invalid data provided.' };
-    }
+          if (password) {
+              db.prepare(
+                  'UPDATE users SET password = ? WHERE id = ?'
+              ).run(password, id);
+          }
+      })();
+  } catch (error) {
+      console.error('Database Error:', error);
+      return { message: 'Database Error: Failed to update profile.' };
+  }
 
-    const { name, email, birthDate } = validatedFields.data;
-
-    try {
-        db.prepare(
-        'UPDATE users SET name = ?, email = ?, birthDate = ? WHERE id = ?'
-        ).run(name, email, birthDate || null, id);
-    } catch (error) {
-        console.error('Database Error:', error);
-        return { error: 'Failed to update profile.' };
-    }
-
-    revalidatePath(`/dashboard/profile`);
-    revalidatePath(`/dashboard/members`);
-    revalidatePath(`/`);
-    return { success: true };
+  revalidatePath(`/dashboard/profile`);
+  revalidatePath(`/dashboard/members`);
+  return { success: true, message: 'Profile updated successfully!' };
 }
 
 export async function markUangPangkalAsPaid(userId: string, paymentDate: string) {
