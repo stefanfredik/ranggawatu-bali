@@ -37,6 +37,16 @@ function initDb() {
     );
   `);
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS uang_pangkal (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL UNIQUE,
+      amount INTEGER NOT NULL,
+      payment_date TEXT NOT NULL,
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+  `);
+
   const users: User[] = [
     { id: '1', name: 'Administrator', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15' },
     { id: '2', name: 'Budi Doremi', email: 'budi@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1992-08-22' },
@@ -86,9 +96,16 @@ function initDb() {
     },
   ];
 
+  const uangPangkalData = [
+    { user_id: '1', amount: 50000, payment_date: '2023-01-15' },
+    { user_id: '2', amount: 50000, payment_date: '2023-10-15' },
+    { user_id: '4', amount: 50000, payment_date: '2023-11-01' },
+  ];
+
   const insertUser = db.prepare('INSERT OR IGNORE INTO users (id, name, email, role, avatar, birthDate) VALUES (?, ?, ?, ?, ?, ?)');
   const insertEvent = db.prepare('INSERT OR IGNORE INTO events (id, title, date, description, author) VALUES (?, ?, ?, ?, ?)');
   const insertAnnouncement = db.prepare('INSERT OR IGNORE INTO announcements (id, title, content, date, author) VALUES (?, ?, ?, ?, ?)');
+  const insertUangPangkal = db.prepare('INSERT OR IGNORE INTO uang_pangkal (user_id, amount, payment_date) VALUES (?, ?, ?)');
 
   const insertManyUsers = db.transaction((users) => {
     for (const user of users) insertUser.run(user.id, user.name, user.email, user.role, user.avatar, user.birthDate);
@@ -98,6 +115,9 @@ function initDb() {
   });
   const insertManyAnnouncements = db.transaction((announcements) => {
     for (const ann of announcements) insertAnnouncement.run(ann.id, ann.title, ann.content, ann.date, ann.author);
+  });
+   const insertManyUangPangkal = db.transaction((data) => {
+    for (const item of data) insertUangPangkal.run(item.user_id, item.amount, item.payment_date);
   });
   
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
@@ -113,6 +133,11 @@ function initDb() {
   const announcementCount = db.prepare('SELECT COUNT(*) as count FROM announcements').get() as { count: number };
   if (announcementCount.count === 0) {
       insertManyAnnouncements(announcements);
+  }
+
+  const uangPangkalCount = db.prepare('SELECT COUNT(*) as count FROM uang_pangkal').get() as { count: number };
+  if (uangPangkalCount.count === 0) {
+      insertManyUangPangkal(uangPangkalData);
   }
 }
 

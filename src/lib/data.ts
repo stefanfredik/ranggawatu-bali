@@ -1,7 +1,9 @@
 import { db } from './db';
-import type { User, Event, Announcement } from './data.types';
+import type { User, Event, Announcement, UserWithUangPangkal } from './data.types';
 
 export * from './data.types';
+
+export const UANG_PANGKAL_AMOUNT = 50000;
 
 export async function getUsers(): Promise<User[]> {
     return db.prepare('SELECT * FROM users ORDER BY name ASC').all() as User[];
@@ -26,4 +28,26 @@ export async function getLoggedInUser(): Promise<User> {
         return { id: '1', name: 'Admin', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15' };
     }
     return user;
+}
+
+export async function getUsersWithUangPangkalStatus(): Promise<UserWithUangPangkal[]> {
+    const query = `
+        SELECT
+            u.id, u.name, u.email, u.role, u.avatar, u.birthDate,
+            up.amount as uangPangkalAmount,
+            up.payment_date as uangPangkalDate
+        FROM users u
+        LEFT JOIN uang_pangkal up ON u.id = up.user_id
+        ORDER BY u.name ASC
+    `;
+    
+    const results = db.prepare(query).all() as (User & { uangPangkalAmount: number | null; uangPangkalDate: string | null })[];
+    
+    return results.map(user => {
+        const isPaid = user.uangPangkalAmount !== null && user.uangPangkalAmount >= UANG_PANGKAL_AMOUNT;
+        return {
+            ...user,
+            uangPangkalStatus: isPaid ? 'Lunas' : 'Belum Lunas',
+        };
+    });
 }

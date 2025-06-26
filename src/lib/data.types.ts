@@ -22,3 +22,16 @@ export type User = {
     date: string;
     author: string;
   };
+
+  export type UangPangkal = {
+    id: number;
+    user_id: string;
+    amount: number;
+    payment_date: string;
+  };
+
+  export type UserWithUangPangkal = User & {
+      uangPangkalStatus: 'Lunas' | 'Belum Lunas';
+      uangPangkalAmount: number | null;
+      uangPangkalDate: string | null;
+  };
