@@ -1,9 +1,9 @@
 'use client';
-import { useState, useTransition } from "react";
+import { useState, useTransition, useMemo } from "react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { id as localeID } from 'date-fns/locale';
-import { MoreHorizontal, PlusCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,12 +12,20 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { useToast } from "@/hooks/use-toast";
 import { deletePemasukan } from '@/lib/actions';
 import type { Pemasukan } from "@/lib/data";
+import { Input } from "@/components/ui/input";
 
 export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pemasukan[] }) {
   const [pemasukanList, setPemasukanList] = useState<Pemasukan[]>(initialPemasukan);
   const [itemToDelete, setItemToDelete] = useState<Pemasukan | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredPemasukan = useMemo(() => {
+    return pemasukanList.filter((pemasukan) =>
+      pemasukan.description.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [pemasukanList, searchTerm]);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -78,6 +86,17 @@ export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pe
             </CardDescription>
           </CardHeader>
           <CardContent>
+            <div className="flex items-center pb-4">
+              <div className="relative w-full max-w-sm">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Cari berdasarkan deskripsi..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
             <Table>
               <TableHeader>
                 <TableRow>
@@ -88,7 +107,7 @@ export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pe
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {pemasukanList.length > 0 ? pemasukanList.map((pemasukan) => (
+                {filteredPemasukan.length > 0 ? filteredPemasukan.map((pemasukan) => (
                   <TableRow key={pemasukan.id}>
                     <TableCell className="font-medium">{pemasukan.description}</TableCell>
                     <TableCell>{format(new Date(pemasukan.date), "PPP", { locale: localeID })}</TableCell>
@@ -128,7 +147,7 @@ export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pe
                 )) : (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center">
-                      Belum ada data pemasukan.
+                      {searchTerm ? "Tidak ada pemasukan yang cocok dengan pencarian Anda." : "Belum ada data pemasukan."}
                     </TableCell>
                   </TableRow>
                 )}
