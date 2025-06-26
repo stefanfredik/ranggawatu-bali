@@ -221,7 +221,7 @@ export function IuranBulananClientPage({
                 <TableHead>Anggota</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Jumlah Setor</TableHead>
-                <TableHead>Tanggal Setor</TableHead>
+                <TableHead className="hidden md:table-cell">Tanggal Setor</TableHead>
                 {canEdit && <TableHead><span className="sr-only">Actions</span></TableHead>}
               </TableRow>
             </TableHeader>
@@ -231,12 +231,15 @@ export function IuranBulananClientPage({
                   <TableCell>
                     <div className="flex items-center gap-4">
                       <Avatar className="h-10 w-10"><AvatarImage src={member.avatar} data-ai-hint="avatar" /><AvatarFallback>{member.name.charAt(0)}</AvatarFallback></Avatar>
-                      <div><p className="font-medium">{member.name}</p><p className="text-sm text-muted-foreground">{member.email}</p></div>
+                      <div>
+                        <p className="font-medium">{member.name}</p>
+                        <p className="hidden text-sm text-muted-foreground md:block">{member.email}</p>
+                      </div>
                     </div>
                   </TableCell>
                   <TableCell><Badge variant={member.iuranStatus === 'Lunas' ? 'default' : 'secondary'}>{member.iuranStatus}</Badge></TableCell>
                   <TableCell className="text-right font-mono">{formatCurrency(member.iuranAmount)}</TableCell>
-                  <TableCell>{member.iuranDate ? format(new Date(member.iuranDate), "PPP", { locale: localeID }) : '-'}</TableCell>
+                  <TableCell className="hidden md:table-cell">{member.iuranDate ? format(new Date(member.iuranDate), "PPP", { locale: localeID }) : '-'}</TableCell>
                   {canEdit && (
                     <TableCell className="text-right">
                       {member.role !== 'admin' && (

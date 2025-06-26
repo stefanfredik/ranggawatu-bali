@@ -149,7 +149,7 @@ export function UangPangkalClientPage({ members, uangPangkalAmount, loggedInUser
                 <TableHead>Anggota</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Jumlah Setor</TableHead>
-                <TableHead>Tanggal Setor</TableHead>
+                <TableHead className="hidden md:table-cell">Tanggal Setor</TableHead>
                 {canEdit && <TableHead><span className="sr-only">Actions</span></TableHead>}
               </TableRow>
             </TableHeader>
@@ -164,7 +164,7 @@ export function UangPangkalClientPage({ members, uangPangkalAmount, loggedInUser
                       </Avatar>
                       <div>
                         <p className="font-medium">{member.name}</p>
-                        <p className="text-sm text-muted-foreground">{member.email}</p>
+                        <p className="hidden text-sm text-muted-foreground md:block">{member.email}</p>
                       </div>
                     </div>
                   </TableCell>
@@ -174,7 +174,7 @@ export function UangPangkalClientPage({ members, uangPangkalAmount, loggedInUser
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right font-mono">{formatCurrency(member.uangPangkalAmount)}</TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     {member.uangPangkalDate ? format(new Date(member.uangPangkalDate), "PPP") : '-'}
                   </TableCell>
                   {canEdit && (

@@ -142,7 +142,7 @@ export function PengeluaranClientPage({ initialPengeluaran, loggedInUser }: { in
               <TableHeader>
                 <TableRow>
                   <TableHead>Deskripsi</TableHead>
-                  <TableHead>Tanggal</TableHead>
+                  <TableHead className="hidden md:table-cell">Tanggal</TableHead>
                   <TableHead className="text-right">Jumlah</TableHead>
                   {canEdit && <TableHead><span className="sr-only">Actions</span></TableHead>}
                 </TableRow>
@@ -151,7 +151,7 @@ export function PengeluaranClientPage({ initialPengeluaran, loggedInUser }: { in
                 {paginatedPengeluaran.length > 0 ? paginatedPengeluaran.map((pengeluaran) => (
                   <TableRow key={pengeluaran.id}>
                     <TableCell className="font-medium">{pengeluaran.description}</TableCell>
-                    <TableCell>{format(new Date(pengeluaran.date), "PPP", { locale: localeID })}</TableCell>
+                    <TableCell className="hidden md:table-cell">{format(new Date(pengeluaran.date), "PPP", { locale: localeID })}</TableCell>
                     <TableCell className="text-right font-mono">{formatCurrency(pengeluaran.amount)}</TableCell>
                     {canEdit && (
                       <TableCell className="text-right">
@@ -189,7 +189,7 @@ export function PengeluaranClientPage({ initialPengeluaran, loggedInUser }: { in
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={canEdit ? 4 : 3} className="text-center">
+                    <TableCell colSpan={canEdit ? 3 : 2} className="text-center">
                       {searchTerm ? "Tidak ada pengeluaran yang cocok dengan pencarian Anda." : "Belum ada data pengeluaran."}
                     </TableCell>
                   </TableRow>

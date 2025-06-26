@@ -111,7 +111,7 @@ export function MembersClientPage({ initialUsers, loggedInUser }: { initialUsers
                         </Avatar>
                         <div>
                           <p className="font-medium">{user.name}</p>
-                          <p className="text-sm text-muted-foreground">{user.email}</p>
+                          <p className="hidden text-sm text-muted-foreground md:block">{user.email}</p>
                         </div>
                       </div>
                     </TableCell>

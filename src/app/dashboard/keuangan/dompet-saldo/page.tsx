@@ -94,7 +94,7 @@ export default async function DompetSaldoPage() {
               <TableRow>
                 <TableHead>Deskripsi</TableHead>
                 <TableHead>Tipe</TableHead>
-                <TableHead>Tanggal</TableHead>
+                <TableHead className="hidden md:table-cell">Tanggal</TableHead>
                 <TableHead className="text-right">Jumlah</TableHead>
               </TableRow>
             </TableHeader>
@@ -107,7 +107,7 @@ export default async function DompetSaldoPage() {
                       {tx.type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'}
                     </Badge>
                   </TableCell>
-                  <TableCell>{format(new Date(tx.date), "PPP", { locale: localeID })}</TableCell>
+                  <TableCell className="hidden md:table-cell">{format(new Date(tx.date), "PPP", { locale: localeID })}</TableCell>
                   <TableCell className={`text-right font-mono ${tx.type === 'pengeluaran' ? 'text-destructive' : ''}`}>
                     {tx.type === 'pemasukan' ? '+' : '-'} {formatCurrency(tx.amount)}
                   </TableCell>
