@@ -1,41 +1,22 @@
-'use client';
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { users } from "@/lib/data";
+import { getUserById } from "@/lib/data";
+import { updateUser } from "@/lib/actions";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { notFound, useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { notFound } from "next/navigation";
 
-export default function EditMemberPage({ params }: { params: { id: string } }) {
-  const router = useRouter();
-  const member = users.find(u => u.id === params.id);
+export default async function EditMemberPage({ params }: { params: { id: string } }) {
+  const member = await getUserById(params.id);
 
   if (!member) {
     notFound();
   }
 
-  const [name, setName] = useState(member.name);
-  const [email, setEmail] = useState(member.email);
-  const [role, setRole] = useState<'admin' | 'member'>(member.role);
-  const [birthDate, setBirthDate] = useState(member.birthDate);
-
-  const handleUpdateMember = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you would handle form submission here,
-    // update the data, and then redirect.
-    const userIndex = users.findIndex(u => u.id === params.id);
-    if (userIndex !== -1) {
-        users[userIndex] = { ...users[userIndex], name, email, role, birthDate };
-    }
-    
-    // For this demo, we'll just navigate back to the member's detail page.
-    router.push(`/dashboard/members/${member.id}`);
-  };
+  const updateUserWithId = updateUser.bind(null, member.id);
 
   return (
     <div className="grid gap-6">
@@ -58,19 +39,19 @@ export default function EditMemberPage({ params }: { params: { id: string } }) {
           <CardDescription>Make changes to the member's details below.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleUpdateMember} className="grid gap-6">
+          <form action={updateUserWithId} className="grid gap-6">
             <div className="grid md:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                     <Label htmlFor="full-name">Full Name</Label>
-                    <Input id="full-name" value={name} onChange={(e) => setName(e.target.value)} required />
+                    <Input id="full-name" name="full-name" defaultValue={member.name} required />
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
+                    <Input id="email" name="email" type="email" defaultValue={member.email} required />
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="role">Role</Label>
-                    <Select value={role} onValueChange={(value: 'admin' | 'member') => setRole(value)}>
+                    <Select name="role" defaultValue={member.role}>
                         <SelectTrigger id="role">
                             <SelectValue placeholder="Select a role" />
                         </SelectTrigger>
@@ -82,7 +63,7 @@ export default function EditMemberPage({ params }: { params: { id: string } }) {
                 </div>
                  <div className="grid gap-2">
                     <Label htmlFor="birthdate">Birth Date</Label>
-                    <Input id="birthdate" type="date" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+                    <Input id="birthdate" name="birthdate" type="date" defaultValue={member.birthDate} />
                 </div>
             </div>
             

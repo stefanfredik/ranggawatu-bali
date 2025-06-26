@@ -1,11 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { announcements, events, loggedInUser } from "@/lib/data";
+import { getAnnouncements, getEvents, getLoggedInUser } from "@/lib/data";
 import { ArrowRight, Megaphone, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { format } from 'date-fns';
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const loggedInUser = await getLoggedInUser();
+  const announcements = await getAnnouncements();
+  const events = await getEvents();
+
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">

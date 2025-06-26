@@ -1,17 +1,15 @@
-'use client';
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { users } from "@/lib/data";
+import { getUserById } from "@/lib/data";
 import { ArrowLeft, Edit, Mail, Cake, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from 'date-fns';
 
-export default function MemberDetailsPage({ params }: { params: { id: string } }) {
-  const member = users.find(u => u.id === params.id);
+export default async function MemberDetailsPage({ params }: { params: { id: string } }) {
+  const member = await getUserById(params.id);
 
   if (!member) {
     notFound();

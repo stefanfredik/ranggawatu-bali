@@ -11,13 +11,14 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { loggedInUser } from "@/lib/data";
+import { getLoggedInUserSync } from "@/lib/data";
 import { CreditCard, LogOut, User as UserIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export function UserNav() {
   const router = useRouter();
+  const loggedInUser = getLoggedInUserSync();
 
   return (
     <DropdownMenu>

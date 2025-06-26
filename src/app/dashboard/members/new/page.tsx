@@ -5,20 +5,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useRouter } from 'next/navigation';
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { createUser } from "@/lib/actions";
 
 export default function NewMemberPage() {
-  const router = useRouter();
-
-  const handleAddMember = (e: React.FormEvent) => {
-    e.preventDefault();
-    // In a real app, you would handle form submission here,
-    // save the data, and then redirect.
-    // For this demo, we'll just navigate back to the members list.
-    router.push('/dashboard/members');
-  };
 
   return (
     <div className="grid gap-6">
@@ -41,19 +32,19 @@ export default function NewMemberPage() {
           <CardDescription>Please provide the necessary information for the new member.</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleAddMember} className="grid gap-6">
+          <form action={createUser} className="grid gap-6">
             <div className="grid md:grid-cols-2 gap-4">
                 <div className="grid gap-2">
                     <Label htmlFor="full-name">Full Name</Label>
-                    <Input id="full-name" placeholder="e.g., John Doe" required />
+                    <Input id="full-name" name="full-name" placeholder="e.g., John Doe" required />
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="email">Email Address</Label>
-                    <Input id="email" type="email" placeholder="e.g., john.doe@example.com" required />
+                    <Input id="email" name="email" type="email" placeholder="e.g., john.doe@example.com" required />
                 </div>
                 <div className="grid gap-2">
                     <Label htmlFor="role">Role</Label>
-                    <Select defaultValue="member">
+                    <Select name="role" defaultValue="member">
                         <SelectTrigger id="role">
                             <SelectValue placeholder="Select a role" />
                         </SelectTrigger>
@@ -65,7 +56,7 @@ export default function NewMemberPage() {
                 </div>
                  <div className="grid gap-2">
                     <Label htmlFor="birthdate">Birth Date</Label>
-                    <Input id="birthdate" type="date" />
+                    <Input id="birthdate" name="birthdate" type="date" />
                 </div>
             </div>
             

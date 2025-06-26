@@ -1,0 +1,121 @@
+import Database from 'better-sqlite3';
+import type { User, Event, Announcement } from './data.types';
+
+const db = new Database('organizee.db');
+
+db.pragma('journal_mode = WAL');
+
+function initDb() {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS users (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL UNIQUE,
+      role TEXT NOT NULL,
+      avatar TEXT,
+      birthDate TEXT
+    );
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS events (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      date TEXT NOT NULL,
+      description TEXT NOT NULL,
+      author TEXT NOT NULL
+    );
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS announcements (
+      id TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      content TEXT NOT NULL,
+      date TEXT NOT NULL,
+      author TEXT NOT NULL
+    );
+  `);
+
+  const users: User[] = [
+    { id: '1', name: 'Administrator', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15' },
+    { id: '2', name: 'Budi Doremi', email: 'budi@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1992-08-22' },
+    { id: '3', name: 'Citra Kirana', email: 'citra@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: new Date(new Date().setMonth(new Date().getMonth(), 5)).toISOString().split('T')[0] },
+    { id: '4', name: 'Dewi Lestari', email: 'dewi@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1988-11-10' },
+    { id: '5', name: 'Eka Kurniawan', email: 'eka@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1995-03-30' },
+  ];
+  
+  const events: Event[] = [
+    {
+      id: '1',
+      title: 'Monthly General Meeting',
+      date: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
+      description: 'Discussion of quarterly progress and planning for the next period. All members are required to attend.',
+      author: 'Administrator'
+    },
+    {
+      id: '2',
+      title: 'Team Building Workshop',
+      date: new Date(new Date().setDate(new Date().getDate() + 14)).toISOString(),
+      description: 'A fun workshop to improve teamwork and collaboration. Don\'t miss out on the exciting games and activities!',
+      author: 'Administrator'
+    },
+    {
+      id: '3',
+      title: 'Charity Drive for Local Orphanage',
+      date: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString(),
+      description: 'Annual charity drive. We will be collecting donations of clothes, books, and toys.',
+      author: 'Administrator'
+    },
+  ];
+  
+  const announcements: Announcement[] = [
+    {
+      id: '1',
+      title: 'New Policy on Office Hours',
+      content: 'Starting next month, the official office hours will be from 9:00 AM to 5:00 PM, Monday to Friday. Please plan your schedules accordingly.',
+      date: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString(),
+      author: 'Administrator'
+    },
+    {
+      id: '2',
+      title: 'Holiday Schedule Announcement',
+      content: 'The office will be closed on the 25th of this month for a national holiday. We will resume operations on the 26th.',
+      date: new Date(new Date().setDate(new Date().getDate() - 5)).toISOString(),
+      author: 'Administrator'
+    },
+  ];
+
+  const insertUser = db.prepare('INSERT OR IGNORE INTO users (id, name, email, role, avatar, birthDate) VALUES (?, ?, ?, ?, ?, ?)');
+  const insertEvent = db.prepare('INSERT OR IGNORE INTO events (id, title, date, description, author) VALUES (?, ?, ?, ?, ?)');
+  const insertAnnouncement = db.prepare('INSERT OR IGNORE INTO announcements (id, title, content, date, author) VALUES (?, ?, ?, ?, ?)');
+
+  const insertManyUsers = db.transaction((users) => {
+    for (const user of users) insertUser.run(user.id, user.name, user.email, user.role, user.avatar, user.birthDate);
+  });
+  const insertManyEvents = db.transaction((events) => {
+    for (const event of events) insertEvent.run(event.id, event.title, event.date, event.description, event.author);
+  });
+  const insertManyAnnouncements = db.transaction((announcements) => {
+    for (const ann of announcements) insertAnnouncement.run(ann.id, ann.title, ann.content, ann.date, ann.author);
+  });
+  
+  const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
+  if (userCount.count === 0) {
+      insertManyUsers(users);
+  }
+
+  const eventCount = db.prepare('SELECT COUNT(*) as count FROM events').get() as { count: number };
+  if (eventCount.count === 0) {
+      insertManyEvents(events);
+  }
+
+  const announcementCount = db.prepare('SELECT COUNT(*) as count FROM announcements').get() as { count: number };
+  if (announcementCount.count === 0) {
+      insertManyAnnouncements(announcements);
+  }
+}
+
+initDb();
+
+export { db };

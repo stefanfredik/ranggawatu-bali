@@ -1,10 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { events, loggedInUser } from "@/lib/data";
+import { getEvents, getLoggedInUser } from "@/lib/data";
 import { PlusCircle } from "lucide-react";
 import { format } from 'date-fns';
 
-export default function EventsPage() {
+export default async function EventsPage() {
+  const events = await getEvents();
+  const loggedInUser = await getLoggedInUser();
+
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">

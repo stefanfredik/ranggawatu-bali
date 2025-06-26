@@ -1,9 +1,10 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { users } from "@/lib/data";
+import { getUsers } from "@/lib/data";
 import { format } from "date-fns";
 
-export default function BirthdaysPage() {
+export default async function BirthdaysPage() {
+  const users = await getUsers();
   const currentMonth = new Date().getMonth();
   const birthdayMembers = users.filter(user => new Date(user.birthDate).getMonth() === currentMonth);
 
