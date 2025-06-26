@@ -13,7 +13,7 @@ import {
   SidebarTrigger,
   SidebarInset,
 } from "@/components/ui/sidebar";
-import { Home, Calendar, Cake, Megaphone, User, Settings, Bot, LifeBuoy, Shapes } from "lucide-react";
+import { Home, Calendar, Cake, Megaphone, User, Settings, Bot, LifeBuoy, Shapes, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -29,6 +29,7 @@ export default function DashboardLayout({
     { href: "/dashboard/events", label: "Events", icon: Calendar },
     { href: "/dashboard/birthdays", label: "Birthdays", icon: Cake },
     { href: "/dashboard/announcements", label: "Announcements", icon: Megaphone },
+    { href: "/dashboard/members", label: "Members", icon: Users },
     { href: "/dashboard/announcements/new", label: "AI Generator", icon: Bot },
     { href: "/dashboard/profile", label: "Profile", icon: User },
   ];
