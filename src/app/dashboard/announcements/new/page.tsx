@@ -1,16 +1,39 @@
 'use client';
 
 import { summarizeDecision } from "@/ai/flows/summarize-decision";
+import { createAnnouncement } from "@/lib/actions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, Clipboard, Loader2 } from "lucide-react";
+import { Bot, Clipboard, Loader2, Send } from "lucide-react";
 import { useState } from "react";
+import { useFormStatus } from "react-dom";
+
+function SubmitButton({ disabled }: { disabled: boolean }) {
+    const { pending } = useFormStatus();
+    return (
+      <Button type="submit" disabled={disabled || pending}>
+        {pending ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Posting...
+          </>
+        ) : (
+          <>
+            <Send className="mr-2 h-4 w-4" />
+            Post Announcement
+          </>
+        )}
+      </Button>
+    );
+}
 
 export default function NewAnnouncementPage() {
   const [meetingNotes, setMeetingNotes] = useState('');
+  const [announcementTitle, setAnnouncementTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -52,7 +75,7 @@ export default function NewAnnouncementPage() {
   }
 
   return (
-    <div className="grid gap-6">
+    <form action={createAnnouncement} className="grid gap-6">
        <div>
         <h1 className="text-2xl font-semibold">AI Announcement Generator</h1>
         <p className="text-muted-foreground">
@@ -79,7 +102,7 @@ export default function NewAnnouncementPage() {
                     disabled={isLoading}
                 />
             </div>
-            <Button onClick={handleGenerateSummary} disabled={isLoading}>
+            <Button type="button" onClick={handleGenerateSummary} disabled={isLoading}>
                 {isLoading ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -91,31 +114,44 @@ export default function NewAnnouncementPage() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Generated Announcement</CardTitle>
+            <CardTitle>New Announcement</CardTitle>
             <CardDescription>
-              Review the AI-generated summary. You can copy it and post it as a new announcement.
+              Review the AI-generated summary, give it a title, and post it.
             </CardDescription>
           </CardHeader>
           <CardContent className="grid gap-4">
+            <div className="grid gap-2">
+                <Label htmlFor="title">Title</Label>
+                <Input 
+                  id="title" 
+                  name="title" 
+                  placeholder="Enter announcement title" 
+                  value={announcementTitle}
+                  onChange={(e) => setAnnouncementTitle(e.target.value)}
+                  required
+                />
+            </div>
             <div className="grid gap-2 relative">
-                <Label htmlFor="summary">Summary</Label>
+                <Label htmlFor="content">Summary</Label>
                 <Textarea
-                    id="summary"
+                    id="content"
+                    name="content"
                     placeholder="Your generated announcement will appear here..."
-                    className="min-h-[300px] lg:min-h-[400px] bg-muted/50"
+                    className="min-h-[250px] lg:min-h-[305px] bg-muted/50"
                     value={summary}
-                    readOnly
+                    onChange={(e) => setSummary(e.target.value)}
+                    required
                 />
                  {summary && (
-                    <Button variant="ghost" size="icon" className="absolute top-0 right-0 m-2 h-8 w-8" onClick={copyToClipboard}>
+                    <Button variant="ghost" size="icon" type="button" className="absolute top-0 right-0 m-2 h-8 w-8" onClick={copyToClipboard}>
                         <Clipboard className="h-4 w-4" />
                     </Button>
                 )}
             </div>
-             <Button disabled={!summary}>Post Announcement</Button>
+             <SubmitButton disabled={!summary || !announcementTitle} />
           </CardContent>
         </Card>
       </div>
-    </div>
+    </form>
   );
 }

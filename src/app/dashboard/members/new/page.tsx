@@ -1,5 +1,3 @@
-'use client';
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -8,8 +6,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { createUser } from "@/lib/actions";
+import { getLoggedInUser } from "@/lib/data";
+import { notFound } from "next/navigation";
 
-export default function NewMemberPage() {
+export default async function NewMemberPage() {
+  const loggedInUser = await getLoggedInUser();
+  if (loggedInUser.role !== 'admin') {
+    notFound();
+  }
 
   return (
     <div className="grid gap-6">

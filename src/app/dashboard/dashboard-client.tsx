@@ -134,10 +134,12 @@ export function DashboardClient({
                 </SidebarMenuButton>
               </SidebarMenuItem>
              <SidebarMenuItem>
-                <SidebarMenuButton tooltip="Settings">
-                  <Settings className="h-5 w-5" />
-                  <span>Settings</span>
-                </SidebarMenuButton>
+                <Link href="/dashboard/profile" className='w-full'>
+                    <SidebarMenuButton tooltip="Settings">
+                    <Settings className="h-5 w-5" />
+                    <span>Settings</span>
+                    </SidebarMenuButton>
+                </Link>
               </SidebarMenuItem>
           </SidebarMenu>
         </SidebarFooter>

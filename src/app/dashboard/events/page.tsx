@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { getEvents, getLoggedInUser } from "@/lib/data";
 import { PlusCircle } from "lucide-react";
 import { format } from 'date-fns';
+import Link from "next/link";
 
 export default async function EventsPage() {
   const events = await getEvents();
@@ -16,9 +17,11 @@ export default async function EventsPage() {
           <p className="text-muted-foreground">Here is a list of all upcoming events.</p>
         </div>
         {loggedInUser.role === 'admin' && (
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Create Event
+          <Button asChild>
+            <Link href="/dashboard/events/new">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Create Event
+            </Link>
           </Button>
         )}
       </div>

@@ -444,3 +444,134 @@ export async function logout() {
   cookies().delete('session');
   redirect('/');
 }
+
+const AnnouncementSchema = z.object({
+  title: z.string().min(1, 'Title is required.'),
+  content: z.string().min(1, 'Content is required.'),
+});
+
+export async function createAnnouncement(formData: FormData) {
+  const loggedInUser = await getLoggedInUser();
+  if (loggedInUser.role !== 'admin') {
+    throw new Error('Unauthorized');
+  }
+
+  const validatedFields = AnnouncementSchema.safeParse({
+    title: formData.get('title'),
+    content: formData.get('content'),
+  });
+
+  if (!validatedFields.success) {
+    return { 
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Failed to create announcement.' 
+    };
+  }
+
+  const { title, content } = validatedFields.data;
+  const id = crypto.randomUUID();
+  const date = new Date().toISOString();
+  const author = loggedInUser.name;
+
+  try {
+    db.prepare(
+      'INSERT INTO announcements (id, title, content, date, author) VALUES (?, ?, ?, ?, ?)'
+    ).run(id, title, content, date, author);
+  } catch (error) {
+    console.error('Database Error:', error);
+    return { message: 'Database Error: Failed to create announcement.' };
+  }
+
+  revalidatePath('/dashboard/announcements');
+  revalidatePath('/dashboard');
+  redirect('/dashboard/announcements');
+}
+
+const EventSchema = z.object({
+    title: z.string().min(1, 'Title is required.'),
+    description: z.string().min(1, 'Description is required.'),
+    date: z.string().min(1, 'Date is required.'),
+});
+
+export async function createEvent(formData: FormData) {
+    const loggedInUser = await getLoggedInUser();
+    if (loggedInUser.role !== 'admin') {
+        throw new Error('Unauthorized');
+    }
+
+    const validatedFields = EventSchema.safeParse({
+        title: formData.get('title'),
+        description: formData.get('description'),
+        date: formData.get('date'),
+    });
+
+    if (!validatedFields.success) {
+        return { message: 'Failed to create event.' };
+    }
+
+    const { title, description, date } = validatedFields.data;
+    const id = crypto.randomUUID();
+    const author = loggedInUser.name;
+
+    try {
+        db.prepare(
+            'INSERT INTO events (id, title, description, date, author) VALUES (?, ?, ?, ?, ?)'
+        ).run(id, title, description, date, author);
+    } catch (error) {
+        console.error('Database Error:', error);
+        return { message: 'Database error: Failed to create event.' };
+    }
+
+    revalidatePath('/dashboard/events');
+    revalidatePath('/dashboard');
+    redirect('/dashboard/events');
+}
+
+const RegisterSchema = z.object({
+  name: z.string().min(1, 'Full name is required.'),
+  email: z.string().email('Invalid email address.'),
+  password: z.string().min(5, 'Password must be at least 5 characters.'),
+});
+
+export async function registerUser(prevState: any, formData: FormData) {
+  const validatedFields = RegisterSchema.safeParse(
+    Object.fromEntries(formData.entries())
+  );
+
+  if (!validatedFields.success) {
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Invalid fields. Failed to register.',
+    };
+  }
+
+  const { name, email, password } = validatedFields.data;
+
+  // Check if user already exists
+  const existingUser = db.prepare('SELECT id FROM users WHERE email = ?').get(email);
+  if (existingUser) {
+    return {
+      message: 'An account with this email already exists.',
+    };
+  }
+
+  const id = crypto.randomUUID();
+  const avatar = 'https://placehold.co/100x100.png';
+  const role = 'member';
+
+  try {
+    db.prepare(
+      'INSERT INTO users (id, name, email, role, avatar, birthDate, password) VALUES (?, ?, ?, ?, ?, ?, ?)'
+    ).run(id, name, email, role, avatar, null, password);
+  } catch (error) {
+    console.error('Database Error:', error);
+    return {
+      message: 'Database Error: Failed to register user.',
+    };
+  }
+  
+  cookies().set('session', id, { httpOnly: true, path: '/' });
+
+  revalidatePath('/dashboard');
+  redirect('/dashboard');
+}

@@ -3,13 +3,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { getUserById } from "@/lib/data";
+import { getUserById, getLoggedInUser } from "@/lib/data";
 import { updateUser } from "@/lib/actions";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { notFound } from "next/navigation";
 
 export default async function EditMemberPage({ params }: { params: { id: string } }) {
+  const loggedInUser = await getLoggedInUser();
+  if (loggedInUser.role !== 'admin') {
+    notFound();
+  }
+  
   const member = await getUserById(params.id);
 
   if (!member) {
