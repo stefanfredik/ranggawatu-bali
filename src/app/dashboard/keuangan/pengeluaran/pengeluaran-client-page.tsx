@@ -11,18 +11,19 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { deletePengeluaran } from '@/lib/actions';
-import type { Pengeluaran } from "@/lib/data";
+import type { Pengeluaran, User } from "@/lib/data";
 import { Input } from "@/components/ui/input";
 
 const ITEMS_PER_PAGE = 50;
 
-export function PengeluaranClientPage({ initialPengeluaran }: { initialPengeluaran: Pengeluaran[] }) {
+export function PengeluaranClientPage({ initialPengeluaran, loggedInUser }: { initialPengeluaran: Pengeluaran[], loggedInUser: User }) {
   const [pengeluaranList, setPengeluaranList] = useState<Pengeluaran[]>(initialPengeluaran);
   const [itemToDelete, setItemToDelete] = useState<Pengeluaran | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const canEdit = loggedInUser.role === 'admin' || loggedInUser.role === 'bendahara';
 
   const filteredPengeluaran = useMemo(() => {
     return pengeluaranList.filter((pengeluaran) =>
@@ -93,12 +94,14 @@ export function PengeluaranClientPage({ initialPengeluaran }: { initialPengeluar
               Kelola data pengeluaran organisasi.
             </p>
           </div>
-          <Button asChild>
-            <Link href="/dashboard/keuangan/pengeluaran/new">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Tambah Pengeluaran
-            </Link>
-          </Button>
+          {canEdit && (
+            <Button asChild>
+              <Link href="/dashboard/keuangan/pengeluaran/new">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Tambah Pengeluaran
+              </Link>
+            </Button>
+          )}
         </div>
         
         <Card>
@@ -141,7 +144,7 @@ export function PengeluaranClientPage({ initialPengeluaran }: { initialPengeluar
                   <TableHead>Deskripsi</TableHead>
                   <TableHead>Tanggal</TableHead>
                   <TableHead className="text-right">Jumlah</TableHead>
-                  <TableHead><span className="sr-only">Actions</span></TableHead>
+                  {canEdit && <TableHead><span className="sr-only">Actions</span></TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -150,41 +153,43 @@ export function PengeluaranClientPage({ initialPengeluaran }: { initialPengeluar
                     <TableCell className="font-medium">{pengeluaran.description}</TableCell>
                     <TableCell>{format(new Date(pengeluaran.date), "PPP", { locale: localeID })}</TableCell>
                     <TableCell className="text-right font-mono">{formatCurrency(pengeluaran.amount)}</TableCell>
-                    <TableCell className="text-right">
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <Link href={`/dashboard/keuangan/pengeluaran/${pengeluaran.id}`}>
-                            <DropdownMenuItem>
-                              Lihat Detail
+                    {canEdit && (
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <Link href={`/dashboard/keuangan/pengeluaran/${pengeluaran.id}`}>
+                              <DropdownMenuItem>
+                                Lihat Detail
+                              </DropdownMenuItem>
+                            </Link>
+                            <Link href={`/dashboard/keuangan/pengeluaran/${pengeluaran.id}/edit`}>
+                              <DropdownMenuItem>
+                                Edit
+                              </DropdownMenuItem>
+                            </Link>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                              onSelect={() => openDeleteDialog(pengeluaran)}
+                              disabled={isPending}
+                            >
+                              Hapus
                             </DropdownMenuItem>
-                          </Link>
-                          <Link href={`/dashboard/keuangan/pengeluaran/${pengeluaran.id}/edit`}>
-                            <DropdownMenuItem>
-                              Edit
-                            </DropdownMenuItem>
-                          </Link>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                            onSelect={() => openDeleteDialog(pengeluaran)}
-                            disabled={isPending}
-                          >
-                            Hapus
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    )}
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center">
+                    <TableCell colSpan={canEdit ? 4 : 3} className="text-center">
                       {searchTerm ? "Tidak ada pengeluaran yang cocok dengan pencarian Anda." : "Belum ada data pengeluaran."}
                     </TableCell>
                   </TableRow>

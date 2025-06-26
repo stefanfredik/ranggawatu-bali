@@ -51,6 +51,7 @@ export default function NewMemberPage() {
                         <SelectContent>
                             <SelectItem value="member">Member</SelectItem>
                             <SelectItem value="admin">Admin</SelectItem>
+                            <SelectItem value="bendahara">Bendahara</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

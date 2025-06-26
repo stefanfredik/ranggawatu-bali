@@ -11,18 +11,19 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel,
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { deletePemasukan } from '@/lib/actions';
-import type { Pemasukan } from "@/lib/data";
+import type { Pemasukan, User } from "@/lib/data";
 import { Input } from "@/components/ui/input";
 
 const ITEMS_PER_PAGE = 50;
 
-export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pemasukan[] }) {
+export function PemasukanClientPage({ initialPemasukan, loggedInUser }: { initialPemasukan: Pemasukan[], loggedInUser: User }) {
   const [pemasukanList, setPemasukanList] = useState<Pemasukan[]>(initialPemasukan);
   const [itemToDelete, setItemToDelete] = useState<Pemasukan | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const canEdit = loggedInUser.role === 'admin' || loggedInUser.role === 'bendahara';
 
   const filteredPemasukan = useMemo(() => {
     return pemasukanList.filter((pemasukan) =>
@@ -94,12 +95,14 @@ export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pe
               Kelola data pemasukan organisasi.
             </p>
           </div>
-          <Button asChild>
-            <Link href="/dashboard/keuangan/pemasukan/new">
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Tambah Pemasukan
-            </Link>
-          </Button>
+          {canEdit && (
+            <Button asChild>
+              <Link href="/dashboard/keuangan/pemasukan/new">
+                <PlusCircle className="mr-2 h-4 w-4" />
+                Tambah Pemasukan
+              </Link>
+            </Button>
+          )}
         </div>
         
         <Card>
@@ -142,7 +145,7 @@ export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pe
                   <TableHead>Deskripsi</TableHead>
                   <TableHead>Tanggal</TableHead>
                   <TableHead className="text-right">Jumlah</TableHead>
-                  <TableHead><span className="sr-only">Actions</span></TableHead>
+                  {canEdit && <TableHead><span className="sr-only">Actions</span></TableHead>}
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -151,41 +154,43 @@ export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pe
                     <TableCell className="font-medium">{pemasukan.description}</TableCell>
                     <TableCell>{format(new Date(pemasukan.date), "PPP", { locale: localeID })}</TableCell>
                     <TableCell className="text-right font-mono">{formatCurrency(pemasukan.amount)}</TableCell>
-                    <TableCell className="text-right">
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button aria-haspopup="true" size="icon" variant="ghost">
-                            <MoreHorizontal className="h-4 w-4" />
-                            <span className="sr-only">Toggle menu</span>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                          <Link href={`/dashboard/keuangan/pemasukan/${pemasukan.id}`}>
-                            <DropdownMenuItem>
-                              Lihat Detail
+                    {canEdit && (
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button aria-haspopup="true" size="icon" variant="ghost">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Toggle menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <Link href={`/dashboard/keuangan/pemasukan/${pemasukan.id}`}>
+                              <DropdownMenuItem>
+                                Lihat Detail
+                              </DropdownMenuItem>
+                            </Link>
+                            <Link href={`/dashboard/keuangan/pemasukan/${pemasukan.id}/edit`}>
+                              <DropdownMenuItem>
+                                Edit
+                              </DropdownMenuItem>
+                            </Link>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                              onSelect={() => openDeleteDialog(pemasukan)}
+                              disabled={isPending}
+                            >
+                              Hapus
                             </DropdownMenuItem>
-                          </Link>
-                          <Link href={`/dashboard/keuangan/pemasukan/${pemasukan.id}/edit`}>
-                            <DropdownMenuItem>
-                              Edit
-                            </DropdownMenuItem>
-                          </Link>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                            onSelect={() => openDeleteDialog(pemasukan)}
-                            disabled={isPending}
-                          >
-                            Hapus
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    )}
                   </TableRow>
                 )) : (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center">
+                    <TableCell colSpan={canEdit ? 4 : 3} className="text-center">
                       {searchTerm ? "Tidak ada pemasukan yang cocok dengan pencarian Anda." : "Belum ada data pemasukan."}
                     </TableCell>
                   </TableRow>

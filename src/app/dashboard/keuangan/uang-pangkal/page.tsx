@@ -1,8 +1,9 @@
-import { getUsersWithUangPangkalStatus, UANG_PANGKAL_AMOUNT } from "@/lib/data";
+import { getUsersWithUangPangkalStatus, UANG_PANGKAL_AMOUNT, getLoggedInUser } from "@/lib/data";
 import { UangPangkalClientPage } from "./uang-pangkal-client";
 
 export default async function UangPangkalPage() {
   const members = await getUsersWithUangPangkalStatus();
+  const loggedInUser = await getLoggedInUser();
 
   return (
     <div className="grid gap-6">
@@ -12,7 +13,7 @@ export default async function UangPangkalPage() {
           Kelola dan lihat status pembayaran uang pangkal anggota.
         </p>
       </div>
-      <UangPangkalClientPage members={members} uangPangkalAmount={UANG_PANGKAL_AMOUNT} />
+      <UangPangkalClientPage members={members} uangPangkalAmount={UANG_PANGKAL_AMOUNT} loggedInUser={loggedInUser} />
     </div>
   );
 }

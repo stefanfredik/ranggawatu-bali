@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { id as localeID } from 'date-fns/locale';
 import { ArrowLeft, Edit } from 'lucide-react';
 
-import { getPemasukanById } from '@/lib/data';
+import { getPemasukanById, getLoggedInUser } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -16,6 +16,8 @@ export default async function DetailPemasukanPage({ params }: { params: { id: st
   }
 
   const pemasukan = await getPemasukanById(id);
+  const loggedInUser = await getLoggedInUser();
+  const canEdit = loggedInUser.role === 'admin' || loggedInUser.role === 'bendahara';
 
   if (!pemasukan) {
     notFound();
@@ -43,12 +45,14 @@ export default async function DetailPemasukanPage({ params }: { params: { id: st
           <p className="text-muted-foreground">Melihat rincian catatan pemasukan.</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <Link href={`/dashboard/keuangan/pemasukan/${pemasukan.id}/edit`}>
-            <Button>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </Button>
-          </Link>
+          {canEdit && (
+            <Link href={`/dashboard/keuangan/pemasukan/${pemasukan.id}/edit`}>
+              <Button>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
       

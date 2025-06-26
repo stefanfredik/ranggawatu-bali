@@ -1,5 +1,5 @@
 import { IuranBulananClientPage } from "./iuran-bulanan-client";
-import { getUsersWithIuranStatus, IURAN_BULANAN_AMOUNT } from "@/lib/data";
+import { getUsersWithIuranStatus, IURAN_BULANAN_AMOUNT, getLoggedInUser } from "@/lib/data";
 
 export default async function IuranBulananPage({
   searchParams,
@@ -16,6 +16,7 @@ export default async function IuranBulananPage({
   const year = Number(searchParams?.year) || currentYear;
   
   const members = await getUsersWithIuranStatus(month, year);
+  const loggedInUser = await getLoggedInUser();
 
   return (
     <div className="grid gap-6">
@@ -30,6 +31,7 @@ export default async function IuranBulananPage({
         initialMonth={month}
         initialYear={year}
         iuranAmount={IURAN_BULANAN_AMOUNT}
+        loggedInUser={loggedInUser}
       />
     </div>
   );

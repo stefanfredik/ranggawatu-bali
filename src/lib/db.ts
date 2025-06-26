@@ -81,7 +81,7 @@ function initDb() {
 
   const users: User[] = [
     { id: '1', name: 'Administrator', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15' },
-    { id: '2', name: 'Budi Doremi', email: 'budi@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1992-08-22' },
+    { id: '2', name: 'Budi Doremi', email: 'budi@example.com', role: 'bendahara', avatar: 'https://placehold.co/100x100.png', birthDate: '1992-08-22' },
     { id: '3', name: 'Citra Kirana', email: 'citra@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: new Date(new Date().setMonth(new Date().getMonth(), 5)).toISOString().split('T')[0] },
     { id: '4', name: 'Dewi Lestari', email: 'dewi@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1988-11-10' },
     { id: '5', name: 'Eka Kurniawan', email: 'eka@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1995-03-30' },

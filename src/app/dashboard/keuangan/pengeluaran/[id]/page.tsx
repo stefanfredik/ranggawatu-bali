@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { id as localeID } from 'date-fns/locale';
 import { ArrowLeft, Edit } from 'lucide-react';
 
-import { getPengeluaranById } from '@/lib/data';
+import { getPengeluaranById, getLoggedInUser } from '@/lib/data';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -16,6 +16,8 @@ export default async function DetailPengeluaranPage({ params }: { params: { id: 
   }
 
   const pengeluaran = await getPengeluaranById(id);
+  const loggedInUser = await getLoggedInUser();
+  const canEdit = loggedInUser.role === 'admin' || loggedInUser.role === 'bendahara';
 
   if (!pengeluaran) {
     notFound();
@@ -43,12 +45,14 @@ export default async function DetailPengeluaranPage({ params }: { params: { id: 
           <p className="text-muted-foreground">Melihat rincian catatan pengeluaran.</p>
         </div>
         <div className="ml-auto flex items-center gap-2">
-          <Link href={`/dashboard/keuangan/pengeluaran/${pengeluaran.id}/edit`}>
-            <Button>
-              <Edit className="mr-2 h-4 w-4" />
-              Edit
-            </Button>
-          </Link>
+          {canEdit && (
+            <Link href={`/dashboard/keuangan/pengeluaran/${pengeluaran.id}/edit`}>
+              <Button>
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
       

@@ -9,7 +9,7 @@ import { UANG_PANGKAL_AMOUNT } from './data';
 const UserSchema = z.object({
   name: z.string().min(1, 'Full Name is required.'),
   email: z.string().email('Invalid email address.'),
-  role: z.enum(['admin', 'member']),
+  role: z.enum(['admin', 'member', 'bendahara']),
   birthDate: z.string().optional(),
 });
 

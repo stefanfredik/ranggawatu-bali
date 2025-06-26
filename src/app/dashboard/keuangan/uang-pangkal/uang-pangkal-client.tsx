@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { Calendar as CalendarIcon, MoreHorizontal, DollarSign, UserCheck, UserX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { markUangPangkalAsPaid } from '@/lib/actions';
-import type { UserWithUangPangkal } from '@/lib/data.types';
+import type { UserWithUangPangkal, User } from '@/lib/data.types';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -42,11 +42,12 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-export function UangPangkalClientPage({ members, uangPangkalAmount }: { members: UserWithUangPangkal[], uangPangkalAmount: number }) {
+export function UangPangkalClientPage({ members, uangPangkalAmount, loggedInUser }: { members: UserWithUangPangkal[], uangPangkalAmount: number, loggedInUser: User }) {
   const [memberToMark, setMemberToMark] = useState<UserWithUangPangkal | null>(null);
   const [paymentDate, setPaymentDate] = useState<Date | undefined>(new Date());
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const canEdit = loggedInUser.role === 'admin' || loggedInUser.role === 'bendahara';
 
   const summary = useMemo(() => {
     const paidMembers = members.filter(m => m.uangPangkalStatus === 'Lunas');
@@ -149,7 +150,7 @@ export function UangPangkalClientPage({ members, uangPangkalAmount }: { members:
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Jumlah Setor</TableHead>
                 <TableHead>Tanggal Setor</TableHead>
-                <TableHead><span className="sr-only">Actions</span></TableHead>
+                {canEdit && <TableHead><span className="sr-only">Actions</span></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -176,23 +177,25 @@ export function UangPangkalClientPage({ members, uangPangkalAmount }: { members:
                   <TableCell>
                     {member.uangPangkalDate ? format(new Date(member.uangPangkalDate), "PPP") : '-'}
                   </TableCell>
-                  <TableCell className="text-right">
-                     {member.role !== 'admin' && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                            <Button aria-haspopup="true" size="icon" variant="ghost">
-                                <MoreHorizontal className="h-4 w-4" />
-                                <span className="sr-only">Toggle menu</span>
-                            </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onSelect={() => handleMarkPaid(member)} disabled={member.uangPangkalStatus === 'Lunas'}>
-                                  Tandai Sudah Bayar
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                     )}
-                  </TableCell>
+                  {canEdit && (
+                    <TableCell className="text-right">
+                      {member.role !== 'admin' && (
+                          <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                              <Button aria-haspopup="true" size="icon" variant="ghost">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Toggle menu</span>
+                              </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onSelect={() => handleMarkPaid(member)} disabled={member.uangPangkalStatus === 'Lunas'}>
+                                    Tandai Sudah Bayar
+                                  </DropdownMenuItem>
+                              </DropdownMenuContent>
+                          </DropdownMenu>
+                      )}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>

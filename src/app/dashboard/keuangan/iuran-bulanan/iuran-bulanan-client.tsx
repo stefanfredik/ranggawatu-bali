@@ -7,7 +7,7 @@ import { id as localeID } from 'date-fns/locale';
 import { Calendar as CalendarIcon, MoreHorizontal, DollarSign, UserCheck, UserX } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { markIuranAsPaid } from '@/lib/actions';
-import type { UserWithIuranStatus } from '@/lib/data.types';
+import type { UserWithIuranStatus, User } from '@/lib/data.types';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -73,11 +73,13 @@ export function IuranBulananClientPage({
   initialMonth,
   initialYear,
   iuranAmount,
+  loggedInUser,
 }: {
   members: UserWithIuranStatus[];
   initialMonth: number;
   initialYear: number;
   iuranAmount: number;
+  loggedInUser: User;
 }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -86,6 +88,7 @@ export function IuranBulananClientPage({
   const [paymentAmount, setPaymentAmount] = useState(iuranAmount);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
+  const canEdit = loggedInUser.role === 'admin' || loggedInUser.role === 'bendahara';
 
   const yearOptions = useMemo(() => getYearOptions(), []);
 
@@ -219,7 +222,7 @@ export function IuranBulananClientPage({
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Jumlah Setor</TableHead>
                 <TableHead>Tanggal Setor</TableHead>
-                <TableHead><span className="sr-only">Actions</span></TableHead>
+                {canEdit && <TableHead><span className="sr-only">Actions</span></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -234,16 +237,18 @@ export function IuranBulananClientPage({
                   <TableCell><Badge variant={member.iuranStatus === 'Lunas' ? 'default' : 'secondary'}>{member.iuranStatus}</Badge></TableCell>
                   <TableCell className="text-right font-mono">{formatCurrency(member.iuranAmount)}</TableCell>
                   <TableCell>{member.iuranDate ? format(new Date(member.iuranDate), "PPP", { locale: localeID }) : '-'}</TableCell>
-                  <TableCell className="text-right">
-                     {member.role !== 'admin' && (
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Toggle menu</span></Button></DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuItem onSelect={() => handleMarkPaid(member)} disabled={member.iuranStatus === 'Lunas'}>Tandai Sudah Bayar</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                     )}
-                  </TableCell>
+                  {canEdit && (
+                    <TableCell className="text-right">
+                      {member.role !== 'admin' && (
+                          <DropdownMenu>
+                              <DropdownMenuTrigger asChild><Button aria-haspopup="true" size="icon" variant="ghost"><MoreHorizontal className="h-4 w-4" /><span className="sr-only">Toggle menu</span></Button></DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onSelect={() => handleMarkPaid(member)} disabled={member.iuranStatus === 'Lunas'}>Tandai Sudah Bayar</DropdownMenuItem>
+                              </DropdownMenuContent>
+                          </DropdownMenu>
+                      )}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
             </TableBody>
