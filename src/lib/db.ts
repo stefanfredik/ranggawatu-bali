@@ -87,10 +87,10 @@ function initDb() {
 
   const users: (User & {password: string})[] = [
     { id: '1', name: 'Administrator', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15', password: '12345' },
-    { id: '2', name: 'Budi Doremi', email: 'budi@example.com', role: 'bendahara', avatar: 'https://placehold.co/100x100.png', birthDate: '1992-08-22', password: '12345' },
-    { id: '3', name: 'Citra Kirana', email: 'citra@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: new Date(new Date().setMonth(new Date().getMonth(), 5)).toISOString().split('T')[0], password: '12345' },
-    { id: '4', name: 'Dewi Lestari', email: 'dewi@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1988-11-10', password: '12345' },
-    { id: '5', name: 'Eka Kurniawan', email: 'eka@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1995-03-30', password: '12345' },
+    { id: '2', name: 'Budi Doremi', email: 'budi@example.com', role: 'ketua', avatar: 'https://placehold.co/100x100.png', birthDate: '1992-08-22', password: '12345' },
+    { id: '3', name: 'Citra Kirana', email: 'citra@example.com', role: 'sekretaris', avatar: 'https://placehold.co/100x100.png', birthDate: new Date(new Date().setMonth(new Date().getMonth(), 5)).toISOString().split('T')[0], password: '12345' },
+    { id: '4', name: 'Dewi Lestari', email: 'dewi@example.com', role: 'bendahara', avatar: 'https://placehold.co/100x100.png', birthDate: '1988-11-10', password: '12345' },
+    { id: '5', name: 'Eka Kurniawan', email: 'eka@example.com', role: 'wakil-ketua', avatar: 'https://placehold.co/100x100.png', birthDate: '1995-03-30', password: '12345' },
   ];
   
   const events: Event[] = [
@@ -158,13 +158,17 @@ function initDb() {
   const insertPengeluaran = db.prepare('INSERT OR IGNORE INTO pengeluaran (description, amount, date) VALUES (?, ?, ?)');
   const insertIuranBulanan = db.prepare('INSERT OR IGNORE INTO iuran_bulanan (user_id, amount, payment_date, month, year) VALUES (?, ?, ?, ?, ?)');
 
-  // This transaction will insert users if they don't exist, and then ensure their password is set.
-  // It's safe to run every time.
+  // This transaction will insert users if they don't exist, and then ensure their role is up-to-date
+  // with the seed data. It will only set a password if one isn't already set for an existing user.
   const seedUsers = db.transaction((usersToSeed) => {
-    const insertStmt = db.prepare('INSERT OR IGNORE INTO users (id, name, email, role, avatar, birthDate) VALUES (?, ?, ?, ?, ?, ?)');
-    const updatePwdStmt = db.prepare('UPDATE users SET password = ? WHERE id = ?');
+    const insertStmt = db.prepare('INSERT OR IGNORE INTO users (id, name, email, role, avatar, birthDate, password) VALUES (?, ?, ?, ?, ?, ?, ?)');
+    const updateRoleStmt = db.prepare('UPDATE users SET role = ? WHERE id = ?');
+    const updatePwdStmt = db.prepare('UPDATE users SET password = ? WHERE id = ? AND password IS NULL');
+
     for (const user of usersToSeed) {
-        insertStmt.run(user.id, user.name, user.email, user.role, user.avatar, user.birthDate);
+        insertStmt.run(user.id, user.name, user.email, user.role, user.avatar, user.birthDate, user.password);
+        // For existing seed users, make sure their role is up to date and password is set if it was null.
+        updateRoleStmt.run(user.role, user.id);
         updatePwdStmt.run(user.password, user.id);
     }
   });
@@ -188,7 +192,7 @@ function initDb() {
     for (const item of data) insertIuranBulanan.run(item.user_id, item.amount, item.payment_date, item.month, item.year);
   });
   
-  // Seed users and ensure passwords are set
+  // Seed users and ensure roles and passwords are set
   seedUsers(users);
   
   const eventCount = db.prepare('SELECT COUNT(*) as count FROM events').get() as { count: number };

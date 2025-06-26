@@ -4,17 +4,22 @@ import { z } from 'zod';
 import { db } from './db';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { UANG_PANGKAL_AMOUNT, getUserByEmailForAuth } from './data';
+import { UANG_PANGKAL_AMOUNT, getUserByEmailForAuth, getLoggedInUser } from './data';
 import { cookies } from 'next/headers';
 
 const UserSchema = z.object({
   name: z.string().min(1, 'Full Name is required.'),
   email: z.string().email('Invalid email address.'),
-  role: z.enum(['admin', 'member', 'bendahara']),
+  role: z.enum(['admin', 'member', 'bendahara', 'ketua', 'wakil-ketua', 'sekretaris']),
   birthDate: z.string().optional(),
 });
 
 export async function createUser(formData: FormData) {
+  const loggedInUser = await getLoggedInUser();
+  if (loggedInUser.role !== 'admin') {
+    throw new Error('Unauthorized');
+  }
+
   const validatedFields = UserSchema.safeParse({
     name: formData.get('full-name'),
     email: formData.get('email'),
@@ -51,6 +56,11 @@ export async function createUser(formData: FormData) {
 }
 
 export async function updateUser(id: string, formData: FormData) {
+    const loggedInUser = await getLoggedInUser();
+    if (loggedInUser.role !== 'admin') {
+      throw new Error('Unauthorized');
+    }
+
     const validatedFields = UserSchema.safeParse({
         name: formData.get('full-name'),
         email: formData.get('email'),

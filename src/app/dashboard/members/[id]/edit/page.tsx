@@ -64,6 +64,9 @@ export default async function EditMemberPage({ params }: { params: { id: string 
                             <SelectItem value="member">Member</SelectItem>
                             <SelectItem value="admin">Admin</SelectItem>
                             <SelectItem value="bendahara">Bendahara</SelectItem>
+                            <SelectItem value="ketua">Ketua</SelectItem>
+                            <SelectItem value="wakil-ketua">Wakil Ketua</SelectItem>
+                            <SelectItem value="sekretaris">Sekretaris</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>

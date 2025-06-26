@@ -2,7 +2,7 @@ export type User = {
     id: string;
     name: string;
     email: string;
-    role: 'admin' | 'member' | 'bendahara';
+    role: 'admin' | 'member' | 'bendahara' | 'ketua' | 'wakil-ketua' | 'sekretaris';
     avatar: string;
     birthDate: string; // YYYY-MM-DD
     password?: string;
