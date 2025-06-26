@@ -9,9 +9,28 @@ export async function getUsers(): Promise<User[]> {
     return db.prepare('SELECT * FROM users ORDER BY name ASC').all() as User[];
 }
 
-export async function getUserById(id: string): Promise<User | null> {
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(id) as User | undefined;
-    return user || null;
+export async function getUserById(id: string): Promise<UserWithUangPangkal | null> {
+    const query = `
+        SELECT
+            u.id, u.name, u.email, u.role, u.avatar, u.birthDate,
+            up.amount as uangPangkalAmount,
+            up.payment_date as uangPangkalDate
+        FROM users u
+        LEFT JOIN uang_pangkal up ON u.id = up.user_id
+        WHERE u.id = ?
+    `;
+    const result = db.prepare(query).get(id) as (User & { uangPangkalAmount: number | null; uangPangkalDate: string | null; }) | undefined;
+    
+    if (!result) {
+        return null;
+    }
+
+    const isPaid = result.uangPangkalAmount !== null && result.uangPangkalAmount >= UANG_PANGKAL_AMOUNT;
+    
+    return {
+        ...result,
+        uangPangkalStatus: isPaid ? 'Lunas' : 'Belum Lunas',
+    };
 }
 
 export async function getEvents(): Promise<Event[]> {

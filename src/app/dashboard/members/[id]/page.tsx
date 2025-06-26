@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserById } from "@/lib/data";
-import { ArrowLeft, Edit, Mail, Cake, UserCircle } from "lucide-react";
+import { ArrowLeft, Edit, Mail, Cake, UserCircle, Landmark } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from 'date-fns';
@@ -14,6 +14,15 @@ export default async function MemberDetailsPage({ params }: { params: { id: stri
   if (!member) {
     notFound();
   }
+
+  const formatCurrency = (amount: number | null) => {
+    if (amount === null || typeof amount !== 'number') return '-';
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
 
   return (
     <div className="grid gap-6">
@@ -74,6 +83,33 @@ export default async function MemberDetailsPage({ params }: { params: { id: stri
                         <p className="font-mono text-xs">{member.id}</p>
                     </div>
                 </div>
+                <div className="flex items-center gap-4">
+                    <Landmark className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                        <p className="text-muted-foreground">Status Uang Pangkal</p>
+                        <p className="font-medium">
+                             <Badge variant={member.uangPangkalStatus === 'Lunas' ? 'default' : 'secondary'}>
+                                {member.uangPangkalStatus}
+                            </Badge>
+                        </p>
+                    </div>
+                </div>
+                 <div className="flex items-center gap-4">
+                    <Landmark className="h-5 w-5 text-muted-foreground" />
+                    <div>
+                        <p className="text-muted-foreground">Jumlah Uang Pangkal</p>
+                        <p className="font-medium">{formatCurrency(member.uangPangkalAmount)}</p>
+                    </div>
+                </div>
+                {member.uangPangkalDate && (
+                    <div className="flex items-center gap-4">
+                        <Landmark className="h-5 w-5 text-muted-foreground" />
+                        <div>
+                            <p className="text-muted-foreground">Tanggal Bayar</p>
+                            <p className="font-medium">{format(new Date(member.uangPangkalDate), "MMMM do, yyyy")}</p>
+                        </div>
+                    </div>
+                )}
             </div>
         </CardContent>
       </Card>
