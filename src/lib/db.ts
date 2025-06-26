@@ -47,6 +47,24 @@ function initDb() {
     );
   `);
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS pemasukan (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      description TEXT NOT NULL,
+      amount INTEGER NOT NULL,
+      date TEXT NOT NULL
+    );
+  `);
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS pengeluaran (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      description TEXT NOT NULL,
+      amount INTEGER NOT NULL,
+      date TEXT NOT NULL
+    );
+  `);
+
   const users: User[] = [
     { id: '1', name: 'Administrator', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15' },
     { id: '2', name: 'Budi Doremi', email: 'budi@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1992-08-22' },
@@ -102,10 +120,23 @@ function initDb() {
     { user_id: '4', amount: 50000, payment_date: '2023-11-01' },
   ];
 
+  const pemasukanData = [
+    { description: 'Donasi dari anggota kehormatan', amount: 250000, date: '2023-12-01' },
+    { description: 'Sisa dana dari acara tahun lalu', amount: 150000, date: '2024-01-05' },
+  ];
+
+  const pengeluaranData = [
+      { description: 'Pembelian ATK untuk rapat bulanan', amount: 75000, date: '2024-02-10' },
+      { description: 'Biaya konsumsi rapat', amount: 125000, date: '2024-02-10' },
+      { description: 'Perbaikan proyektor', amount: 200000, date: '2024-03-20' },
+  ];
+
   const insertUser = db.prepare('INSERT OR IGNORE INTO users (id, name, email, role, avatar, birthDate) VALUES (?, ?, ?, ?, ?, ?)');
   const insertEvent = db.prepare('INSERT OR IGNORE INTO events (id, title, date, description, author) VALUES (?, ?, ?, ?, ?)');
   const insertAnnouncement = db.prepare('INSERT OR IGNORE INTO announcements (id, title, content, date, author) VALUES (?, ?, ?, ?, ?)');
   const insertUangPangkal = db.prepare('INSERT OR IGNORE INTO uang_pangkal (user_id, amount, payment_date) VALUES (?, ?, ?)');
+  const insertPemasukan = db.prepare('INSERT OR IGNORE INTO pemasukan (description, amount, date) VALUES (?, ?, ?)');
+  const insertPengeluaran = db.prepare('INSERT OR IGNORE INTO pengeluaran (description, amount, date) VALUES (?, ?, ?)');
 
   const insertManyUsers = db.transaction((users) => {
     for (const user of users) insertUser.run(user.id, user.name, user.email, user.role, user.avatar, user.birthDate);
@@ -118,6 +149,12 @@ function initDb() {
   });
    const insertManyUangPangkal = db.transaction((data) => {
     for (const item of data) insertUangPangkal.run(item.user_id, item.amount, item.payment_date);
+  });
+  const insertManyPemasukan = db.transaction((data) => {
+    for (const item of data) insertPemasukan.run(item.description, item.amount, item.date);
+  });
+  const insertManyPengeluaran = db.transaction((data) => {
+      for (const item of data) insertPengeluaran.run(item.description, item.amount, item.date);
   });
   
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
@@ -139,6 +176,16 @@ function initDb() {
   if (uangPangkalCount.count === 0) {
       insertManyUangPangkal(uangPangkalData);
   }
+
+  const pemasukanCount = db.prepare('SELECT COUNT(*) as count FROM pemasukan').get() as { count: number };
+    if (pemasukanCount.count === 0) {
+        insertManyPemasukan(pemasukanData);
+    }
+
+    const pengeluaranCount = db.prepare('SELECT COUNT(*) as count FROM pengeluaran').get() as { count: number };
+    if (pengeluaranCount.count === 0) {
+        insertManyPengeluaran(pengeluaranData);
+    }
 }
 
 initDb();

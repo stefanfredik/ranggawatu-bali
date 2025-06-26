@@ -1,5 +1,5 @@
 import { db } from './db';
-import type { User, Event, Announcement, UserWithUangPangkal } from './data.types';
+import type { User, Event, Announcement, UserWithUangPangkal, FinancialSummary } from './data.types';
 
 export * from './data.types';
 
@@ -69,4 +69,24 @@ export async function getUsersWithUangPangkalStatus(): Promise<UserWithUangPangk
             uangPangkalStatus: isPaid ? 'Lunas' : 'Belum Lunas',
         };
     });
+}
+
+export async function getFinancialSummary(): Promise<FinancialSummary> {
+    const totalUangPangkalResult = db.prepare('SELECT SUM(amount) as total FROM uang_pangkal').get() as { total: number | null };
+    const totalPemasukanLainResult = db.prepare('SELECT SUM(amount) as total FROM pemasukan').get() as { total: number | null };
+    const totalPengeluaranResult = db.prepare('SELECT SUM(amount) as total FROM pengeluaran').get() as { total: number | null };
+
+    const totalUangPangkal = totalUangPangkalResult.total || 0;
+    const totalPemasukanLain = totalPemasukanLainResult.total || 0;
+    
+    const totalPemasukan = totalUangPangkal + totalPemasukanLain;
+    const totalPengeluaran = totalPengeluaranResult.total || 0;
+
+    const saldoAkhir = totalPemasukan - totalPengeluaran;
+
+    return {
+        totalPemasukan,
+        totalPengeluaran,
+        saldoAkhir,
+    };
 }

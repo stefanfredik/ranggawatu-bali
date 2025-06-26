@@ -35,3 +35,23 @@ export type User = {
       uangPangkalAmount: number | null;
       uangPangkalDate: string | null;
   };
+
+  export type Pemasukan = {
+    id: number;
+    description: string;
+    amount: number;
+    date: string;
+  };
+  
+  export type Pengeluaran = {
+    id: number;
+    description: string;
+    amount: number;
+    date: string;
+  };
+  
+  export type FinancialSummary = {
+    totalPemasukan: number;
+    totalPengeluaran: number;
+    saldoAkhir: number;
+  };
