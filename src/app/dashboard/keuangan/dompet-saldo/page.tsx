@@ -46,9 +46,16 @@ export default async function DompetSaldoPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{formatCurrency(summary.totalPemasukan)}</div>
-             <p className="text-xs text-muted-foreground">
-              Akumulasi dari semua sumber pendapatan
-            </p>
+             <div className="text-xs text-muted-foreground mt-2 space-y-1">
+                <div className="flex justify-between">
+                    <span>Uang Pangkal</span>
+                    <span>{formatCurrency(summary.totalUangPangkal)}</span>
+                </div>
+                <div className="flex justify-between">
+                    <span>Pemasukan Lain</span>
+                    <span>{formatCurrency(summary.totalPemasukanLain)}</span>
+                </div>
+            </div>
           </CardContent>
         </Card>
         <Card>

@@ -97,5 +97,7 @@ export async function getFinancialSummary(): Promise<FinancialSummary> {
         totalPemasukan,
         totalPengeluaran,
         saldoAkhir,
+        totalUangPangkal,
+        totalPemasukanLain,
     };
 }

@@ -54,4 +54,6 @@ export type User = {
     totalPemasukan: number;
     totalPengeluaran: number;
     saldoAkhir: number;
+    totalUangPangkal: number;
+    totalPemasukanLain: number;
   };
