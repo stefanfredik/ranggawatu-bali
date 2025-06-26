@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { getUserById } from "@/lib/data";
-import { ArrowLeft, Edit, Mail, Cake, UserCircle, Landmark } from "lucide-react";
+import { ArrowLeft, Edit, Mail, Cake, UserCircle } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from 'date-fns';
@@ -47,72 +47,77 @@ export default async function MemberDetailsPage({ params }: { params: { id: stri
         </div>
       </div>
       
-      <Card>
-        <CardHeader className="items-center text-center border-b p-6">
-            <Avatar className="h-24 w-24 mb-4">
-                <AvatarImage src={member.avatar} data-ai-hint="avatar" />
-                <AvatarFallback>{member.name.slice(0, 2)}</AvatarFallback>
-            </Avatar>
-            <CardTitle>{member.name}</CardTitle>
-            <CardDescription>
-                <Badge variant={member.role === 'admin' ? 'default' : 'secondary'} className="capitalize text-sm mt-1">
-                    {member.role}
-                </Badge>
-            </CardDescription>
-        </CardHeader>
-        <CardContent className="p-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 text-sm">
-                <div className="flex items-center gap-4">
-                    <Mail className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                        <p className="text-muted-foreground">Email</p>
-                        <p className="font-medium">{member.email}</p>
+      <div className="grid gap-6 md:grid-cols-3">
+        <div className="md:col-span-2">
+            <Card>
+                <CardHeader className="items-center text-center border-b p-6">
+                    <Avatar className="h-24 w-24 mb-4">
+                        <AvatarImage src={member.avatar} data-ai-hint="avatar" />
+                        <AvatarFallback>{member.name.slice(0, 2)}</AvatarFallback>
+                    </Avatar>
+                    <CardTitle>{member.name}</CardTitle>
+                    <CardDescription>
+                        <Badge variant={member.role === 'admin' ? 'default' : 'secondary'} className="capitalize text-sm mt-1">
+                            {member.role}
+                        </Badge>
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 text-sm">
+                        <div className="flex items-center gap-4">
+                            <Mail className="h-5 w-5 text-muted-foreground" />
+                            <div>
+                                <p className="text-muted-foreground">Email</p>
+                                <p className="font-medium">{member.email}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                            <Cake className="h-5 w-5 text-muted-foreground" />
+                            <div>
+                                <p className="text-muted-foreground">Birth Date</p>
+                                <p className="font-medium">{format(new Date(member.birthDate), "MMMM do, yyyy")}</p>
+                            </div>
+                        </div>
+                         <div className="flex items-center gap-4">
+                            <UserCircle className="h-5 w-5 text-muted-foreground" />
+                            <div>
+                                <p className="text-muted-foreground">Member ID</p>
+                                <p className="font-mono text-xs">{member.id}</p>
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <Cake className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                        <p className="text-muted-foreground">Birth Date</p>
-                        <p className="font-medium">{format(new Date(member.birthDate), "MMMM do, yyyy")}</p>
-                    </div>
-                </div>
-                 <div className="flex items-center gap-4">
-                    <UserCircle className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                        <p className="text-muted-foreground">Member ID</p>
-                        <p className="font-mono text-xs">{member.id}</p>
-                    </div>
-                </div>
-                <div className="flex items-center gap-4">
-                    <Landmark className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                        <p className="text-muted-foreground">Status Uang Pangkal</p>
+                </CardContent>
+            </Card>
+        </div>
+        <div className="md:col-span-1">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Uang Pangkal</CardTitle>
+                    <CardDescription>Status pembayaran uang pangkal.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                     <div className="flex justify-between items-center text-sm">
+                        <p className="text-muted-foreground">Status</p>
                         <p className="font-medium">
-                             <Badge variant={member.uangPangkalStatus === 'Lunas' ? 'default' : 'secondary'}>
+                            <Badge variant={member.uangPangkalStatus === 'Lunas' ? 'default' : 'secondary'}>
                                 {member.uangPangkalStatus}
                             </Badge>
                         </p>
                     </div>
-                </div>
-                 <div className="flex items-center gap-4">
-                    <Landmark className="h-5 w-5 text-muted-foreground" />
-                    <div>
-                        <p className="text-muted-foreground">Jumlah Uang Pangkal</p>
+                     <div className="flex justify-between items-center text-sm">
+                        <p className="text-muted-foreground">Jumlah</p>
                         <p className="font-medium">{formatCurrency(member.uangPangkalAmount)}</p>
                     </div>
-                </div>
-                {member.uangPangkalDate && (
-                    <div className="flex items-center gap-4">
-                        <Landmark className="h-5 w-5 text-muted-foreground" />
-                        <div>
+                    {member.uangPangkalDate && (
+                        <div className="flex justify-between items-center text-sm">
                             <p className="text-muted-foreground">Tanggal Bayar</p>
-                            <p className="font-medium">{format(new Date(member.uangPangkalDate), "MMMM do, yyyy")}</p>
+                            <p className="font-medium">{format(new Date(member.uangPangkalDate), "PPP")}</p>
                         </div>
-                    </div>
-                )}
-            </div>
-        </CardContent>
-      </Card>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+      </div>
     </div>
   );
 }
