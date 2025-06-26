@@ -5,7 +5,7 @@ import { format } from 'date-fns';
 import { Calendar as CalendarIcon, MoreHorizontal } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { markUangPangkalAsPaid } from '@/lib/actions';
-import { type UserWithUangPangkal, UANG_PANGKAL_AMOUNT } from '@/lib/data';
+import type { UserWithUangPangkal } from '@/lib/data.types';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -42,7 +42,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
-export function UangPangkalClientPage({ members }: { members: UserWithUangPangkal[] }) {
+export function UangPangkalClientPage({ members, uangPangkalAmount }: { members: UserWithUangPangkal[], uangPangkalAmount: number }) {
   const [memberToMark, setMemberToMark] = useState<UserWithUangPangkal | null>(null);
   const [paymentDate, setPaymentDate] = useState<Date | undefined>(new Date());
   const [isPending, startTransition] = useTransition();
@@ -94,7 +94,7 @@ export function UangPangkalClientPage({ members }: { members: UserWithUangPangka
         <CardHeader>
           <CardTitle>Status Uang Pangkal Anggota</CardTitle>
           <CardDescription>
-            Daftar semua anggota dan status pembayaran uang pangkal sebesar {formatCurrency(UANG_PANGKAL_AMOUNT)}.
+            Daftar semua anggota dan status pembayaran uang pangkal sebesar {formatCurrency(uangPangkalAmount)}.
           </CardDescription>
         </CardHeader>
         <CardContent>

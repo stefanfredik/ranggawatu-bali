@@ -1,4 +1,4 @@
-import { getUsersWithUangPangkalStatus } from "@/lib/data";
+import { getUsersWithUangPangkalStatus, UANG_PANGKAL_AMOUNT } from "@/lib/data";
 import { UangPangkalClientPage } from "./uang-pangkal-client";
 
 export default async function UangPangkalPage() {
@@ -12,7 +12,7 @@ export default async function UangPangkalPage() {
           Kelola dan lihat status pembayaran uang pangkal anggota.
         </p>
       </div>
-      <UangPangkalClientPage members={members} />
+      <UangPangkalClientPage members={members} uangPangkalAmount={UANG_PANGKAL_AMOUNT} />
     </div>
   );
 }
