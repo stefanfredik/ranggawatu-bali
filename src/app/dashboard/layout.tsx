@@ -13,10 +13,9 @@ import {
   SidebarTrigger,
   SidebarInset,
 } from "@/components/ui/sidebar";
-import { Home, Calendar, Cake, Megaphone, User, Settings, Bot, LifeBuoy } from "lucide-react";
+import { Home, Calendar, Cake, Megaphone, User, Settings, Bot, LifeBuoy, Shapes } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function DashboardLayout({
   children,
@@ -39,10 +38,9 @@ export default function DashboardLayout({
       <Sidebar>
         <SidebarHeader>
           <div className="flex items-center gap-2">
-            <Avatar className="h-8 w-8">
-               <AvatarImage src="https://placehold.co/100x100.png" data-ai-hint="logo" />
-               <AvatarFallback>O</AvatarFallback>
-            </Avatar>
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                <Shapes className="h-5 w-5" />
+            </div>
             <span className="text-lg font-semibold">Organizee</span>
           </div>
         </SidebarHeader>

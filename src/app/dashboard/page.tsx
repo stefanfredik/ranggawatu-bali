@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { announcements, events, loggedInUser } from "@/lib/data";
-import { ArrowRight, PlusCircle } from "lucide-react";
+import { ArrowRight, Megaphone, PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { format } from 'date-fns';
 
@@ -35,10 +35,15 @@ export default function DashboardPage() {
           <CardContent>
             <ul className="space-y-4">
               {announcements.slice(0, 3).map((ann) => (
-                <li key={ann.id} className="p-4 rounded-lg border bg-card/50">
-                  <h3 className="font-semibold">{ann.title}</h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{ann.content}</p>
-                  <p className="text-xs text-muted-foreground mt-2">{format(new Date(ann.date), 'PPP')} by {ann.author}</p>
+                <li key={ann.id} className="flex items-start gap-4 p-4 rounded-lg border bg-card/50">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <Megaphone className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold">{ann.title}</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{ann.content}</p>
+                    <p className="text-xs text-muted-foreground mt-2">{format(new Date(ann.date), 'PPP')} by {ann.author}</p>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -60,7 +65,7 @@ export default function DashboardPage() {
             <ul className="space-y-4">
               {events.slice(0, 3).map((event) => (
                 <li key={event.id} className="flex items-start gap-4">
-                  <div className="flex flex-col items-center justify-center p-2 rounded-md bg-primary/10 text-primary">
+                  <div className="flex h-12 w-12 flex-col items-center justify-center rounded-md bg-primary/10 text-primary">
                     <span className="text-sm font-bold">{format(new Date(event.date), 'dd')}</span>
                     <span className="text-xs">{format(new Date(event.date), 'MMM')}</span>
                   </div>
