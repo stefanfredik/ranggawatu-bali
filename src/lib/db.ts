@@ -158,16 +158,16 @@ function initDb() {
   const insertPengeluaran = db.prepare('INSERT OR IGNORE INTO pengeluaran (description, amount, date) VALUES (?, ?, ?)');
   const insertIuranBulanan = db.prepare('INSERT OR IGNORE INTO iuran_bulanan (user_id, amount, payment_date, month, year) VALUES (?, ?, ?, ?, ?)');
 
-  // This transaction will insert users if they don't exist, and then ensure their role is up-to-date
-  // with the seed data. It will only set a password if one isn't already set for an existing user.
+  // This transaction will insert users if they don't exist, and then ensure their role and password
+  // are always up-to-date with the seed data.
   const seedUsers = db.transaction((usersToSeed) => {
     const insertStmt = db.prepare('INSERT OR IGNORE INTO users (id, name, email, role, avatar, birthDate, password) VALUES (?, ?, ?, ?, ?, ?, ?)');
     const updateRoleStmt = db.prepare('UPDATE users SET role = ? WHERE id = ?');
-    const updatePwdStmt = db.prepare('UPDATE users SET password = ? WHERE id = ? AND password IS NULL');
+    const updatePwdStmt = db.prepare('UPDATE users SET password = ? WHERE id = ?');
 
     for (const user of usersToSeed) {
         insertStmt.run(user.id, user.name, user.email, user.role, user.avatar, user.birthDate, user.password);
-        // For existing seed users, make sure their role is up to date and password is set if it was null.
+        // For existing seed users, make sure their role and password are up to date.
         updateRoleStmt.run(user.role, user.id);
         updatePwdStmt.run(user.password, user.id);
     }

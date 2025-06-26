@@ -3,6 +3,7 @@ import type { User, Event, Announcement, UserWithUangPangkal, FinancialSummary, 
 import { subMonths } from 'date-fns';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { cache } from 'react';
 
 export * from './data.types';
 
@@ -50,7 +51,7 @@ export async function getAnnouncements(): Promise<Announcement[]> {
     return db.prepare('SELECT * FROM announcements ORDER BY date DESC').all() as Announcement[];
 }
 
-export async function getLoggedInUser(): Promise<User> {
+export const getLoggedInUser = cache(async (): Promise<User> => {
     const sessionId = cookies().get('session')?.value;
     if (!sessionId) {
         redirect('/');
@@ -64,7 +65,7 @@ export async function getLoggedInUser(): Promise<User> {
         redirect('/');
     }
     return user;
-}
+});
 
 export async function getUsersWithUangPangkalStatus(): Promise<UserWithUangPangkal[]> {
     const query = `
