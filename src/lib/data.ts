@@ -1,6 +1,8 @@
 import { db } from './db';
 import type { User, Event, Announcement, UserWithUangPangkal, FinancialSummary, Pemasukan, Pengeluaran, Transaction, UserWithIuranStatus } from './data.types';
 import { subMonths } from 'date-fns';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
 export * from './data.types';
 
@@ -49,9 +51,17 @@ export async function getAnnouncements(): Promise<Announcement[]> {
 }
 
 export async function getLoggedInUser(): Promise<User> {
-    const user = db.prepare('SELECT id, name, email, role, avatar, birthDate FROM users WHERE id = ?').get('1') as User | undefined;
+    const sessionId = cookies().get('session')?.value;
+    if (!sessionId) {
+        redirect('/');
+    }
+
+    const user = db.prepare('SELECT id, name, email, role, avatar, birthDate FROM users WHERE id = ?').get(sessionId) as User | undefined;
+    
     if (!user) {
-        return { id: '1', name: 'Admin', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15' };
+        // Cookie might be invalid or user deleted
+        cookies().delete('session');
+        redirect('/');
     }
     return user;
 }

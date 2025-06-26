@@ -5,6 +5,7 @@ import { db } from './db';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { UANG_PANGKAL_AMOUNT, getUserByEmailForAuth } from './data';
+import { cookies } from 'next/headers';
 
 const UserSchema = z.object({
   name: z.string().min(1, 'Full Name is required.'),
@@ -399,6 +400,8 @@ export async function authenticate(prevState: string | undefined, formData: Form
     if (!user || user.password !== password) {
       return 'Invalid credentials.';
     }
+    
+    cookies().set('session', user.id, { httpOnly: true, path: '/' });
 
   } catch (error) {
     console.error('Authentication Error:', error);
@@ -407,4 +410,9 @@ export async function authenticate(prevState: string | undefined, formData: Form
 
   revalidatePath('/dashboard');
   redirect('/dashboard');
+}
+
+export async function logout() {
+  cookies().delete('session');
+  redirect('/');
 }

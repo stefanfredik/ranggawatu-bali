@@ -14,10 +14,9 @@ import {
 import type { User } from "@/lib/data";
 import { CreditCard, LogOut, User as UserIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { logout } from "@/lib/actions";
 
 export function UserNav({ user: loggedInUser }: { user: User }) {
-  const router = useRouter();
 
   if (!loggedInUser) {
     return null;
@@ -56,7 +55,7 @@ export function UserNav({ user: loggedInUser }: { user: User }) {
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push('/')}>
+        <DropdownMenuItem onSelect={() => logout()}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Log out</span>
         </DropdownMenuItem>
