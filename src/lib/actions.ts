@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { db } from './db';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { UANG_PANGKAL_AMOUNT } from './data';
 
 const UserSchema = z.object({
   name: z.string().min(1, 'Full Name is required.'),
@@ -129,4 +130,38 @@ export async function updateProfile(id: string, formData: FormData) {
     revalidatePath(`/dashboard/members`);
     revalidatePath(`/`);
     return { success: true };
+}
+
+export async function markUangPangkalAsPaid(userId: string, paymentDate: string) {
+  const UangPangkalSchema = z.object({
+    userId: z.string(),
+    paymentDate: z.string({ required_error: 'Payment date is required.' }).refine(val => !isNaN(Date.parse(val)), { message: "Invalid date format" }),
+  });
+
+  const validatedFields = UangPangkalSchema.safeParse({ userId, paymentDate });
+
+  if (!validatedFields.success) {
+    console.error(validatedFields.error);
+    return {
+      errors: validatedFields.error.flatten().fieldErrors,
+      message: 'Invalid data provided.',
+    };
+  }
+
+  try {
+    db.prepare(
+      `INSERT INTO uang_pangkal (user_id, amount, payment_date) 
+       VALUES (?, ?, ?)
+       ON CONFLICT(user_id) 
+       DO UPDATE SET amount = excluded.amount, payment_date = excluded.payment_date`
+    ).run(userId, UANG_PANGKAL_AMOUNT, paymentDate);
+  } catch (error) {
+    console.error('Database Error:', error);
+    return {
+      message: 'Database Error: Failed to mark as paid.',
+    };
+  }
+
+  revalidatePath('/dashboard/keuangan/uang-pangkal');
+  return { success: true };
 }
