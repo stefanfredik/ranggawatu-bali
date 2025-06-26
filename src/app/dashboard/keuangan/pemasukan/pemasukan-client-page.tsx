@@ -14,12 +14,15 @@ import { deletePemasukan } from '@/lib/actions';
 import type { Pemasukan } from "@/lib/data";
 import { Input } from "@/components/ui/input";
 
+const ITEMS_PER_PAGE = 50;
+
 export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pemasukan[] }) {
   const [pemasukanList, setPemasukanList] = useState<Pemasukan[]>(initialPemasukan);
   const [itemToDelete, setItemToDelete] = useState<Pemasukan | null>(null);
   const [isPending, startTransition] = useTransition();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filteredPemasukan = useMemo(() => {
     return pemasukanList.filter((pemasukan) =>
@@ -31,12 +34,24 @@ export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pe
     return pemasukanList.reduce((sum, item) => sum + item.amount, 0);
   }, [pemasukanList]);
 
+  const totalPages = Math.ceil(filteredPemasukan.length / ITEMS_PER_PAGE);
+  const paginatedPemasukan = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredPemasukan.slice(startIndex, endIndex);
+  }, [filteredPemasukan, currentPage]);
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
       currency: 'IDR',
       minimumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setCurrentPage(1);
   };
 
   const openDeleteDialog = (item: Pemasukan) => {
@@ -49,6 +64,10 @@ export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pe
     startTransition(async () => {
         const result = await deletePemasukan(itemToDelete.id);
         if (result?.success) {
+            // Adjust current page if the last item on a page is deleted
+            if (paginatedPemasukan.length === 1 && currentPage > 1) {
+              setCurrentPage(currentPage - 1);
+            }
             setPemasukanList(currentList => currentList.filter(item => item.id !== itemToDelete.id));
             toast({
                 title: "Data Dihapus",
@@ -112,7 +131,7 @@ export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pe
                 <Input
                   placeholder="Cari berdasarkan deskripsi..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={handleSearchChange}
                   className="pl-9"
                 />
               </div>
@@ -127,7 +146,7 @@ export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pe
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredPemasukan.length > 0 ? filteredPemasukan.map((pemasukan) => (
+                {paginatedPemasukan.length > 0 ? paginatedPemasukan.map((pemasukan) => (
                   <TableRow key={pemasukan.id}>
                     <TableCell className="font-medium">{pemasukan.description}</TableCell>
                     <TableCell>{format(new Date(pemasukan.date), "PPP", { locale: localeID })}</TableCell>
@@ -173,6 +192,27 @@ export function PemasukanClientPage({ initialPemasukan }: { initialPemasukan: Pe
                 )}
               </TableBody>
             </Table>
+             <div className="flex items-center justify-end space-x-2 py-4">
+                <span className="text-sm text-muted-foreground">
+                    Halaman {currentPage} dari {totalPages > 0 ? totalPages : 1}
+                </span>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={currentPage === 1}
+                >
+                    Sebelumnya
+                </Button>
+                <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={currentPage >= totalPages}
+                >
+                    Berikutnya
+                </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
