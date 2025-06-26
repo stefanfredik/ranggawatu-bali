@@ -1,27 +1,36 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { IuranBulananClientPage } from "./iuran-bulanan-client";
+import { getUsersWithIuranStatus, IURAN_BULANAN_AMOUNT } from "@/lib/data";
 
-export default function IuranBulananPage() {
+export default async function IuranBulananPage({
+  searchParams,
+}: {
+  searchParams?: {
+    month?: string;
+    year?: string;
+  };
+}) {
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+
+  const month = Number(searchParams?.month) || currentMonth;
+  const year = Number(searchParams?.year) || currentYear;
+  
+  const members = await getUsersWithIuranStatus(month, year);
+
   return (
     <div className="grid gap-6">
-       <div>
+      <div>
         <h1 className="text-2xl font-semibold">Iuran Bulanan</h1>
         <p className="text-muted-foreground">
-          Kelola data iuran bulanan anggota.
+          Kelola dan lihat status pembayaran iuran bulanan anggota.
         </p>
       </div>
-      <Card>
-        <CardHeader>
-          <CardTitle>Data Iuran Bulanan</CardTitle>
-          <CardDescription>
-            Fitur ini sedang dalam pengembangan.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">
-            Halaman untuk mengelola iuran bulanan akan segera tersedia.
-          </p>
-        </CardContent>
-      </Card>
+      <IuranBulananClientPage
+        members={members}
+        initialMonth={month}
+        initialYear={year}
+        iuranAmount={IURAN_BULANAN_AMOUNT}
+      />
     </div>
   );
 }

@@ -65,3 +65,18 @@ export type User = {
     date: string;
     type: 'pemasukan' | 'pengeluaran';
   };
+
+  export type IuranBulanan = {
+    id: number;
+    user_id: string;
+    amount: number;
+    payment_date: string;
+    month: number;
+    year: number;
+  };
+  
+  export type UserWithIuranStatus = User & {
+      iuranStatus: 'Lunas' | 'Belum Lunas';
+      iuranAmount: number | null;
+      iuranDate: string | null;
+  };

@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { db } from './db';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
-import { UANG_PANGKAL_AMOUNT } from './data';
+import { UANG_PANGKAL_AMOUNT, IURAN_BULANAN_AMOUNT } from './data';
 
 const UserSchema = z.object({
   name: z.string().min(1, 'Full Name is required.'),
@@ -163,6 +163,7 @@ export async function markUangPangkalAsPaid(userId: string, paymentDate: string)
   }
 
   revalidatePath('/dashboard/keuangan/uang-pangkal');
+  revalidatePath('/dashboard/keuangan/dompet-saldo');
   return { success: true };
 }
 
@@ -329,3 +330,47 @@ export async function deletePengeluaran(id: number) {
         return { message: 'Database Error: Failed to delete pengeluaran.' };
     }
 }
+
+export async function markIuranAsPaid(formData: FormData) {
+    const IuranSchema = z.object({
+      userId: z.string(),
+      paymentDate: z.string().min(1, 'Payment date is required.'),
+      month: z.coerce.number(),
+      year: z.coerce.number(),
+    });
+  
+    const validatedFields = IuranSchema.safeParse({
+      userId: formData.get('userId'),
+      paymentDate: formData.get('paymentDate'),
+      month: formData.get('month'),
+      year: formData.get('year'),
+    });
+  
+    if (!validatedFields.success) {
+      console.error(validatedFields.error);
+      return {
+        errors: validatedFields.error.flatten().fieldErrors,
+        message: 'Invalid data provided.',
+      };
+    }
+  
+    const { userId, paymentDate, month, year } = validatedFields.data;
+  
+    try {
+      db.prepare(
+        `INSERT INTO iuran_bulanan (user_id, amount, payment_date, month, year) 
+         VALUES (?, ?, ?, ?, ?)
+         ON CONFLICT(user_id, month, year) 
+         DO UPDATE SET amount = excluded.amount, payment_date = excluded.payment_date`
+      ).run(userId, IURAN_BULANAN_AMOUNT, paymentDate, month, year);
+    } catch (error) {
+      console.error('Database Error:', error);
+      return {
+        message: 'Database Error: Failed to mark as paid.',
+      };
+    }
+  
+    revalidatePath(`/dashboard/keuangan/iuran-bulanan?month=${month}&year=${year}`);
+    revalidatePath('/dashboard/keuangan/dompet-saldo');
+    return { success: true };
+  }

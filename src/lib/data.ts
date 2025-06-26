@@ -1,10 +1,11 @@
 import { db } from './db';
-import type { User, Event, Announcement, UserWithUangPangkal, FinancialSummary, Pemasukan, Pengeluaran, Transaction } from './data.types';
+import type { User, Event, Announcement, UserWithUangPangkal, FinancialSummary, Pemasukan, Pengeluaran, Transaction, UserWithIuranStatus } from './data.types';
 import { subMonths } from 'date-fns';
 
 export * from './data.types';
 
 export const UANG_PANGKAL_AMOUNT = 50000;
+export const IURAN_BULANAN_AMOUNT = 20000;
 
 export async function getUsers(): Promise<User[]> {
     return db.prepare('SELECT * FROM users ORDER BY name ASC').all() as User[];
@@ -72,8 +73,40 @@ export async function getUsersWithUangPangkalStatus(): Promise<UserWithUangPangk
     });
 }
 
+export async function getUsersWithIuranStatus(month: number, year: number): Promise<UserWithIuranStatus[]> {
+    const query = `
+        SELECT
+            u.id, u.name, u.email, u.role, u.avatar, u.birthDate,
+            i.amount as iuranAmount,
+            i.payment_date as iuranDate
+        FROM users u
+        LEFT JOIN iuran_bulanan i ON u.id = i.user_id AND i.month = ? AND i.year = ?
+        ORDER BY u.name ASC
+    `;
+    
+    const results = db.prepare(query).all(month, year) as (User & { iuranAmount: number | null; iuranDate: string | null })[];
+    
+    return results.map(user => {
+        const isPaid = user.iuranAmount !== null;
+        return {
+            ...user,
+            iuranStatus: isPaid ? 'Lunas' : 'Belum Lunas',
+        };
+    });
+}
+
 export async function getPemasukan(): Promise<Pemasukan[]> {
-    return db.prepare('SELECT * FROM pemasukan ORDER BY date DESC').all() as Pemasukan[];
+    const uangPangkal = db.prepare('SELECT user_id as description, amount, payment_date as date FROM uang_pangkal').all() as any[];
+    const pemasukanLain = db.prepare('SELECT * FROM pemasukan').all() as Pemasukan[];
+
+    const allPemasukan = [
+        ...uangPangkal.map(up => ({ ...up, description: `Uang Pangkal - Anggota ID ${up.description}`})),
+        ...pemasukanLain
+    ];
+
+    allPemasukan.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return allPemasukan as Pemasukan[];
 }
 
 export async function getPemasukanById(id: number): Promise<Pemasukan | null> {
@@ -92,13 +125,15 @@ export async function getPengeluaranById(id: number): Promise<Pengeluaran | null
 
 export async function getFinancialSummary(): Promise<FinancialSummary> {
     const totalUangPangkalResult = db.prepare('SELECT SUM(amount) as total FROM uang_pangkal').get() as { total: number | null };
+    const iuranBulananResult = db.prepare('SELECT SUM(amount) as total FROM iuran_bulanan').get() as { total: number | null };
     const totalPemasukanLainResult = db.prepare('SELECT SUM(amount) as total FROM pemasukan').get() as { total: number | null };
     const totalPengeluaranResult = db.prepare('SELECT SUM(amount) as total FROM pengeluaran').get() as { total: number | null };
 
     const totalUangPangkal = totalUangPangkalResult.total || 0;
+    const totalIuranBulanan = iuranBulananResult.total || 0;
     const totalPemasukanLain = totalPemasukanLainResult.total || 0;
     
-    const totalPemasukan = totalUangPangkal + totalPemasukanLain;
+    const totalPemasukan = totalUangPangkal + totalIuranBulanan + totalPemasukanLain;
     const totalPengeluaran = totalPengeluaranResult.total || 0;
 
     const saldoAkhir = totalPemasukan - totalPengeluaran;
@@ -107,7 +142,7 @@ export async function getFinancialSummary(): Promise<FinancialSummary> {
         totalPemasukan,
         totalPengeluaran,
         saldoAkhir,
-        totalUangPangkal,
+        totalUangPangkal: totalUangPangkal + totalIuranBulanan, // Combined for simplicity on the card
         totalPemasukanLain,
     };
 }
@@ -118,9 +153,14 @@ export async function getRecentTransactions(): Promise<Transaction[]> {
 
     const pemasukanList = db.prepare('SELECT id, description, amount, date FROM pemasukan WHERE date >= ?').all(oneMonthAgoDateString) as Pemasukan[];
     const pengeluaranList = db.prepare('SELECT id, description, amount, date FROM pengeluaran WHERE date >= ?').all(oneMonthAgoDateString) as Pengeluaran[];
+    const uangPangkalList = db.prepare("SELECT id, 'Uang Pangkal' as description, amount, payment_date as date FROM uang_pangkal WHERE payment_date >= ?").all(oneMonthAgoDateString) as any[];
+    const iuranList = db.prepare("SELECT id, 'Iuran Bulanan' as description, amount, payment_date as date FROM iuran_bulanan WHERE payment_date >= ?").all(oneMonthAgoDateString) as any[];
+
 
     const transactions: Transaction[] = [
         ...pemasukanList.map(p => ({ ...p, type: 'pemasukan' as const })),
+        ...uangPangkalList.map(p => ({ ...p, type: 'pemasukan' as const, description: `Uang Pangkal` })),
+        ...iuranList.map(p => ({ ...p, type: 'pemasukan' as const, description: `Iuran Bulanan` })),
         ...pengeluaranList.map(p => ({ ...p, type: 'pengeluaran' as const }))
     ];
 

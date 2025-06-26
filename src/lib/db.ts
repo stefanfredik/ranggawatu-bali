@@ -65,6 +65,20 @@ function initDb() {
     );
   `);
 
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS iuran_bulanan (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id TEXT NOT NULL,
+      amount INTEGER NOT NULL,
+      payment_date TEXT NOT NULL,
+      month INTEGER NOT NULL,
+      year INTEGER NOT NULL,
+      UNIQUE(user_id, month, year),
+      FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
+  `);
+
+
   const users: User[] = [
     { id: '1', name: 'Administrator', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15' },
     { id: '2', name: 'Budi Doremi', email: 'budi@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1992-08-22' },
@@ -137,6 +151,7 @@ function initDb() {
   const insertUangPangkal = db.prepare('INSERT OR IGNORE INTO uang_pangkal (user_id, amount, payment_date) VALUES (?, ?, ?)');
   const insertPemasukan = db.prepare('INSERT OR IGNORE INTO pemasukan (description, amount, date) VALUES (?, ?, ?)');
   const insertPengeluaran = db.prepare('INSERT OR IGNORE INTO pengeluaran (description, amount, date) VALUES (?, ?, ?)');
+  const insertIuranBulanan = db.prepare('INSERT OR IGNORE INTO iuran_bulanan (user_id, amount, payment_date, month, year) VALUES (?, ?, ?, ?, ?)');
 
   const insertManyUsers = db.transaction((users) => {
     for (const user of users) insertUser.run(user.id, user.name, user.email, user.role, user.avatar, user.birthDate);
@@ -155,6 +170,9 @@ function initDb() {
   });
   const insertManyPengeluaran = db.transaction((data) => {
       for (const item of data) insertPengeluaran.run(item.description, item.amount, item.date);
+  });
+  const insertManyIuranBulanan = db.transaction((data) => {
+    for (const item of data) insertIuranBulanan.run(item.user_id, item.amount, item.payment_date, item.month, item.year);
   });
   
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number };
@@ -186,6 +204,17 @@ function initDb() {
     if (pengeluaranCount.count === 0) {
         insertManyPengeluaran(pengeluaranData);
     }
+
+    const iuranBulananCount = db.prepare('SELECT COUNT(*) as count FROM iuran_bulanan').get() as { count: number };
+    if (iuranBulananCount.count === 0) {
+      const currentMonth = new Date().getMonth() + 1;
+      const currentYear = new Date().getFullYear();
+      const demoIuranData = [
+          { user_id: '1', amount: 20000, payment_date: new Date(currentYear, currentMonth - 1, 10).toISOString().split('T')[0], month: currentMonth, year: currentYear },
+          { user_id: '2', amount: 20000, payment_date: new Date(currentYear, currentMonth - 1, 12).toISOString().split('T')[0], month: currentMonth, year: currentYear },
+      ];
+      insertManyIuranBulanan(demoIuranData);
+  }
 }
 
 initDb();
