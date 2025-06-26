@@ -75,6 +75,11 @@ export async function getPemasukan(): Promise<Pemasukan[]> {
     return db.prepare('SELECT * FROM pemasukan ORDER BY date DESC').all() as Pemasukan[];
 }
 
+export async function getPemasukanById(id: number): Promise<Pemasukan | null> {
+    const pemasukan = db.prepare('SELECT * FROM pemasukan WHERE id = ?').get(id) as Pemasukan | undefined;
+    return pemasukan || null;
+}
+
 export async function getFinancialSummary(): Promise<FinancialSummary> {
     const totalUangPangkalResult = db.prepare('SELECT SUM(amount) as total FROM uang_pangkal').get() as { total: number | null };
     const totalPemasukanLainResult = db.prepare('SELECT SUM(amount) as total FROM pemasukan').get() as { total: number | null };

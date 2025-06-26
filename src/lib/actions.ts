@@ -172,7 +172,7 @@ const PemasukanSchema = z.object({
     date: z.string().min(1, 'Date is required.'),
   });
   
-  export async function createPemasukan(formData: FormData) {
+export async function createPemasukan(formData: FormData) {
     const validatedFields = PemasukanSchema.safeParse({
       description: formData.get('description'),
       amount: formData.get('amount'),
@@ -203,4 +203,50 @@ const PemasukanSchema = z.object({
     revalidatePath('/dashboard/keuangan/pemasukan');
     revalidatePath('/dashboard/keuangan/dompet-saldo');
     redirect('/dashboard/keuangan/pemasukan');
+}
+
+export async function updatePemasukan(id: number, formData: FormData) {
+    const validatedFields = PemasukanSchema.safeParse({
+      description: formData.get('description'),
+      amount: formData.get('amount'),
+      date: formData.get('date'),
+    });
+  
+    if (!validatedFields.success) {
+      return {
+        errors: validatedFields.error.flatten().fieldErrors,
+        message: 'Missing Fields. Failed to Update Pemasukan.',
+      };
+    }
+    
+    const { description, amount, date } = validatedFields.data;
+  
+    try {
+      db.prepare(
+        'UPDATE pemasukan SET description = ?, amount = ?, date = ? WHERE id = ?'
+      ).run(description, amount, date, id);
+    } catch (error) {
+      console.error('Database Error:', error);
+      return {
+          message: 'Database Error: Failed to Update Pemasukan.',
+      };
+    }
+  
+    revalidatePath('/dashboard/keuangan/pemasukan');
+    revalidatePath(`/dashboard/keuangan/pemasukan/${id}`);
+    revalidatePath('/dashboard/keuangan/dompet-saldo');
+    redirect(`/dashboard/keuangan/pemasukan/${id}`);
+  }
+  
+  
+  export async function deletePemasukan(id: number) {
+      try {
+          db.prepare('DELETE FROM pemasukan WHERE id = ?').run(id);
+          revalidatePath('/dashboard/keuangan/pemasukan');
+          revalidatePath('/dashboard/keuangan/dompet-saldo');
+          return { success: true };
+      } catch (error) {
+          console.error('Database Error:', error);
+          return { message: 'Database Error: Failed to delete pemasukan.' };
+      }
   }
