@@ -57,3 +57,11 @@ export type User = {
     totalUangPangkal: number;
     totalPemasukanLain: number;
   };
+
+  export type Transaction = {
+    id: number;
+    description: string;
+    amount: number;
+    date: string;
+    type: 'pemasukan' | 'pengeluaran';
+  };

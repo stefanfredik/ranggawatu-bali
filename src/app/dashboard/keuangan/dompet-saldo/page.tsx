@@ -1,9 +1,14 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getFinancialSummary } from "@/lib/data";
+import { getFinancialSummary, getRecentTransactions } from "@/lib/data";
 import { Wallet, ArrowDownCircle, ArrowUpCircle } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { id as localeID } from 'date-fns/locale';
 
 export default async function DompetSaldoPage() {
   const summary = await getFinancialSummary();
+  const recentTransactions = await getRecentTransactions();
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -74,15 +79,44 @@ export default async function DompetSaldoPage() {
       
        <Card>
         <CardHeader>
-          <CardTitle>Riwayat Transaksi</CardTitle>
+          <CardTitle>Riwayat Transaksi Terakhir</CardTitle>
           <CardDescription>
-            Fitur ini sedang dalam pengembangan.
+            Menampilkan transaksi dari 30 hari terakhir.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">
-            Halaman untuk melihat riwayat transaksi akan segera tersedia.
-          </p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Deskripsi</TableHead>
+                <TableHead>Tipe</TableHead>
+                <TableHead>Tanggal</TableHead>
+                <TableHead className="text-right">Jumlah</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {recentTransactions.length > 0 ? recentTransactions.map((tx) => (
+                <TableRow key={`${tx.type}-${tx.id}`}>
+                  <TableCell className="font-medium">{tx.description}</TableCell>
+                  <TableCell>
+                    <Badge variant={tx.type === 'pemasukan' ? 'secondary' : 'destructive'}>
+                      {tx.type === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{format(new Date(tx.date), "PPP", { locale: localeID })}</TableCell>
+                  <TableCell className={`text-right font-mono ${tx.type === 'pengeluaran' ? 'text-destructive' : ''}`}>
+                    {tx.type === 'pemasukan' ? '+' : '-'} {formatCurrency(tx.amount)}
+                  </TableCell>
+                </TableRow>
+              )) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="text-center">
+                    Tidak ada transaksi dalam 30 hari terakhir.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
     </div>

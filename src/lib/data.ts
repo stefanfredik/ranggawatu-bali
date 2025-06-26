@@ -1,5 +1,6 @@
 import { db } from './db';
-import type { User, Event, Announcement, UserWithUangPangkal, FinancialSummary, Pemasukan, Pengeluaran } from './data.types';
+import type { User, Event, Announcement, UserWithUangPangkal, FinancialSummary, Pemasukan, Pengeluaran, Transaction } from './data.types';
+import { subMonths } from 'date-fns';
 
 export * from './data.types';
 
@@ -109,4 +110,21 @@ export async function getFinancialSummary(): Promise<FinancialSummary> {
         totalUangPangkal,
         totalPemasukanLain,
     };
+}
+
+export async function getRecentTransactions(): Promise<Transaction[]> {
+    const oneMonthAgo = subMonths(new Date(), 1);
+    const oneMonthAgoDateString = oneMonthAgo.toISOString().split('T')[0];
+
+    const pemasukanList = db.prepare('SELECT id, description, amount, date FROM pemasukan WHERE date >= ?').all(oneMonthAgoDateString) as Pemasukan[];
+    const pengeluaranList = db.prepare('SELECT id, description, amount, date FROM pengeluaran WHERE date >= ?').all(oneMonthAgoDateString) as Pengeluaran[];
+
+    const transactions: Transaction[] = [
+        ...pemasukanList.map(p => ({ ...p, type: 'pemasukan' as const })),
+        ...pengeluaranList.map(p => ({ ...p, type: 'pengeluaran' as const }))
+    ];
+
+    transactions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+    return transactions;
 }
