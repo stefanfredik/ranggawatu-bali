@@ -1,6 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
+import { useFormStatus } from 'react-dom';
+import { useActionState } from 'react';
 import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 
@@ -22,7 +23,7 @@ function RegisterButton() {
 }
 
 export default function RegisterPage() {
-  const [state, dispatch] = useFormState(registerUser, undefined);
+  const [state, dispatch] = useActionState(registerUser, undefined);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background p-4">

@@ -1,7 +1,7 @@
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
-import { useEffect } from 'react';
+import { useFormStatus } from 'react-dom';
+import { useActionState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +23,7 @@ function SubmitButton() {
 export function ProfileClient({ user }: { user: User }) {
   const initialState = { message: null, errors: {}, success: false };
   const updateProfileWithId = updateProfile.bind(null, user.id);
-  const [state, dispatch] = useFormState(updateProfileWithId, initialState);
+  const [state, dispatch] = useActionState(updateProfileWithId, initialState);
   const { toast } = useToast();
 
   useEffect(() => {
