@@ -24,7 +24,7 @@ export type Announcement = {
 };
 
 export const users: User[] = [
-  { id: '1', name: 'Admin User', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15' },
+  { id: '1', name: 'Administrator', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15' },
   { id: '2', name: 'Budi Doremi', email: 'budi@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1992-08-22' },
   { id: '3', name: 'Citra Kirana', email: 'citra@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: new Date().toISOString().split('T')[0] },
   { id: '4', name: 'Dewi Lestari', email: 'dewi@example.com', role: 'member', avatar: 'https://placehold.co/100x100.png', birthDate: '1988-11-10' },
@@ -37,21 +37,21 @@ export const events: Event[] = [
     title: 'Monthly General Meeting',
     date: new Date(new Date().setDate(new Date().getDate() + 7)).toISOString(),
     description: 'Discussion of quarterly progress and planning for the next period. All members are required to attend.',
-    author: 'Admin User'
+    author: 'Administrator'
   },
   {
     id: '2',
     title: 'Team Building Workshop',
     date: new Date(new Date().setDate(new Date().getDate() + 14)).toISOString(),
     description: 'A fun workshop to improve teamwork and collaboration. Don\'t miss out on the exciting games and activities!',
-    author: 'Admin User'
+    author: 'Administrator'
   },
   {
     id: '3',
     title: 'Charity Drive for Local Orphanage',
     date: new Date(new Date().setDate(new Date().getDate() + 30)).toISOString(),
     description: 'Annual charity drive. We will be collecting donations of clothes, books, and toys.',
-    author: 'Admin User'
+    author: 'Administrator'
   },
 ];
 
@@ -61,14 +61,14 @@ export const announcements: Announcement[] = [
     title: 'New Policy on Office Hours',
     content: 'Starting next month, the official office hours will be from 9:00 AM to 5:00 PM, Monday to Friday. Please plan your schedules accordingly.',
     date: new Date(new Date().setDate(new Date().getDate() - 1)).toISOString(),
-    author: 'Admin User'
+    author: 'Administrator'
   },
   {
     id: '2',
     title: 'Holiday Schedule Announcement',
     content: 'The office will be closed on the 25th of this month for a national holiday. We will resume operations on the 26th.',
     date: new Date(new Date().setDate(new Date().getDate() - 5)).toISOString(),
-    author: 'Admin User'
+    author: 'Administrator'
   },
 ];
 
