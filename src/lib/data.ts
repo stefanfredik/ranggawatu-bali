@@ -20,14 +20,10 @@ export async function getAnnouncements(): Promise<Announcement[]> {
     return db.prepare('SELECT * FROM announcements ORDER BY date DESC').all() as Announcement[];
 }
 
-export function getLoggedInUserSync(): User {
+export async function getLoggedInUser(): Promise<User> {
     const user = db.prepare('SELECT * FROM users WHERE id = ?').get('1') as User | undefined;
     if (!user) {
         return { id: '1', name: 'Admin', email: 'admin@example.com', role: 'admin', avatar: 'https://placehold.co/100x100.png', birthDate: '1990-05-15' };
     }
     return user;
-}
-
-export async function getLoggedInUser(): Promise<User> {
-    return getLoggedInUserSync();
 }
