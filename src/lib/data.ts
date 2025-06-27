@@ -1,5 +1,5 @@
 import { db } from './db';
-import type { User, Event, Announcement, UserWithUangPangkal, FinancialSummary, Pemasukan, Pengeluaran, Transaction, UserWithIuranStatus } from './data.types';
+import type { User, Event, Announcement, UserWithUangPangkal, FinancialSummary, Pemasukan, Pengeluaran, Transaction, UserWithIuranStatus, DashboardFinancialSummary } from './data.types';
 import { subMonths } from 'date-fns';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -160,6 +160,30 @@ export async function getFinancialSummary(): Promise<FinancialSummary> {
         totalUangPangkal,
         totalIuranBulanan,
         totalPemasukanLain,
+    };
+}
+
+export async function getDashboardFinancialSummary(): Promise<DashboardFinancialSummary> {
+    const currentYear = new Date().getFullYear().toString();
+
+    // Calculate total income for the year
+    const totalUangPangkalResult = db.prepare(`SELECT SUM(amount) as total FROM uang_pangkal WHERE strftime('%Y', payment_date) = ?`).get(currentYear) as { total: number | null };
+    const iuranBulananResult = db.prepare('SELECT SUM(amount) as total FROM iuran_bulanan WHERE year = ?').get(currentYear) as { total: number | null };
+    const totalPemasukanLainResult = db.prepare(`SELECT SUM(amount) as total FROM pemasukan WHERE strftime('%Y', date) = ?`).get(currentYear) as { total: number | null };
+    
+    const totalPemasukanTahunan = (totalUangPangkalResult.total || 0) + (iuranBulananResult.total || 0) + (totalPemasukanLainResult.total || 0);
+
+    // Calculate total expenses for the year
+    const totalPengeluaranTahunanResult = db.prepare(`SELECT SUM(amount) as total FROM pengeluaran WHERE strftime('%Y', date) = ?`).get(currentYear) as { total: number | null };
+    const totalPengeluaranTahunan = totalPengeluaranTahunanResult.total || 0;
+
+    // Calculate overall balance (not just for the year)
+    const { saldoAkhir } = await getFinancialSummary();
+
+    return {
+        dompetSaldo: saldoAkhir,
+        totalPemasukanTahunan,
+        totalPengeluaranTahunan,
     };
 }
 

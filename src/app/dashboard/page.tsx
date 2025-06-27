@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getAnnouncements, getEvents, getLoggedInUser } from "@/lib/data";
-import { ArrowRight, Megaphone, PlusCircle } from "lucide-react";
+import { getAnnouncements, getEvents, getLoggedInUser, getDashboardFinancialSummary } from "@/lib/data";
+import { ArrowRight, Megaphone, PlusCircle, Wallet, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 import Link from "next/link";
 import { format } from 'date-fns';
 
@@ -9,23 +9,76 @@ export default async function DashboardPage() {
   const loggedInUser = await getLoggedInUser();
   const announcements = await getAnnouncements();
   const events = await getEvents();
+  const financialSummary = await getDashboardFinancialSummary();
+  const currentYear = new Date().getFullYear();
 
   if (!loggedInUser) {
     return null; // The layout will handle the redirect.
   }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(amount);
+  };
 
   return (
     <div className="grid gap-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">Welcome, {loggedInUser.name}!</h1>
         {loggedInUser.role === 'admin' && (
-          <Link href="/dashboard/events">
+          <Link href="/dashboard/events/new">
             <Button>
               <PlusCircle className="mr-2 h-4 w-4" />
               New Event
             </Button>
           </Link>
         )}
+      </div>
+
+       <div className="grid gap-6 md:grid-cols-3">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Dompet Saldo
+            </CardTitle>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(financialSummary.dompetSaldo)}</div>
+            <p className="text-xs text-muted-foreground">
+              Total saldo kas saat ini
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">
+              Pemasukan Tahun {currentYear}
+            </CardTitle>
+            <ArrowDownCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(financialSummary.totalPemasukanTahunan)}</div>
+            <p className="text-xs text-muted-foreground">
+              Total pemasukan di tahun ini
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pengeluaran Tahun {currentYear}</CardTitle>
+            <ArrowUpCircle className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(financialSummary.totalPengeluaranTahunan)}</div>
+            <p className="text-xs text-muted-foreground">
+              Total pengeluaran di tahun ini
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

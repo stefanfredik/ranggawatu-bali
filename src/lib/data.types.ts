@@ -60,6 +60,12 @@ export type User = {
     totalPemasukanLain: number;
   };
 
+  export type DashboardFinancialSummary = {
+    dompetSaldo: number;
+    totalPemasukanTahunan: number;
+    totalPengeluaranTahunan: number;
+  };
+
   export type Transaction = {
     id: string | number;
     description: string;
@@ -82,3 +88,4 @@ export type User = {
       iuranAmount: number | null;
       iuranDate: string | null;
   };
+
