@@ -18,7 +18,7 @@ export default function LoginPage() {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl font-bold">Organizee</CardTitle>
+          <CardTitle className="text-2xl font-bold">Rangga Watu Bali</CardTitle>
           <CardDescription>
             Enter your email and password below to login.
           </CardDescription>

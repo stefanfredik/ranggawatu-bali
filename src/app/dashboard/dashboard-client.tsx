@@ -18,10 +18,30 @@ import {
   SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Home, Calendar, Cake, Megaphone, User, Settings, Bot, LifeBuoy, Shapes, Users, Landmark, ChevronDown } from "lucide-react";
+import { Home, Calendar, Cake, Megaphone, User, Settings, Bot, LifeBuoy, Users, Landmark, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { User as UserType } from "@/lib/data";
+
+const AppIcon = () => (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+    >
+      <path d="M4 22h16" />
+      <path d="M6 22V8.5a1.5 1.5 0 0 1 3 0V22" />
+      <path d="M15 22V8.5a1.5 1.5 0 0 1 3 0V22" />
+      <path d="M10 8h4" />
+      <path d="M10 5h4" />
+      <path d="M8 2h8" />
+    </svg>
+  );
 
 export function DashboardClient({
   children,
@@ -67,9 +87,9 @@ export function DashboardClient({
         <SidebarHeader>
           <div className="flex items-center gap-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                <Shapes className="h-5 w-5" />
+                <AppIcon />
             </div>
-            <span className="text-lg font-semibold">Organizee</span>
+            <span className="text-lg font-semibold">Rangga Watu Bali</span>
           </div>
         </SidebarHeader>
         <SidebarContent>
