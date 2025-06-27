@@ -77,7 +77,6 @@ export function DashboardClient({
         { href: "/dashboard/keuangan/iuran-bulanan", label: "Iuran Bulanan" },
       ]
     },
-    { href: "/dashboard/announcements/new", label: "AI Generator", icon: Bot },
     { href: "/dashboard/profile", label: "Profile", icon: User },
   ];
 
